@@ -1,53 +1,63 @@
 import React from "react";
-import { Volume2, VolumeX, BookOpen, FileText } from "lucide-react";
+import { Volume2, VolumeX, Sparkles } from "lucide-react";
+import { PRESET_THEMES } from "../utils/theme";
 
 export default function Header({ 
-  activeTab, 
-  onSelectTab, 
   soundEnabled, 
-  onToggleSound,
-  notesCount
+  onToggleSound, 
+  currentColor, 
+  onSelectColor 
 }) {
   return (
-    <header className="site-header glass-box">
-      <div className="brand-wrapper">
-        <div className="brand-avatar">
-          🎯
-        </div>
-        <div>
-          <h1 className="brand-title">منصة المتراكم والمذاكرة</h1>
-          <p className="brand-tagline">الثانوية العامة • كل مادة وجدولها تحتها • مكملين للقمة 🚀</p>
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        {/* أزرار التبديل الرئيسية: المواد vs الملاحظات */}
-        <div className="header-tabs">
-          <button
-            onClick={() => onSelectTab("subjects")}
-            className={`tab-btn ${activeTab === "subjects" ? "active" : ""}`}
-          >
-            <BookOpen size={16} />
-            <span>المواد والمتراكم</span>
-          </button>
-
-          <button
-            onClick={() => onSelectTab("notes")}
-            className={`tab-btn ${activeTab === "notes" ? "active" : ""}`}
-          >
-            <FileText size={16} />
-            <span>الملاحظات والامتحانات {notesCount > 0 ? `(${notesCount})` : ""}</span>
-          </button>
-        </div>
-
+    <header className="top-header-bar">
+      {/* أدوات التحكم بالصوت والألوان كما في الصورة تماماً */}
+      <div className="header-left-tools">
         {/* زر تشغيل / كتم الصوت */}
         <button
           onClick={onToggleSound}
-          className="sound-toggle-btn"
-          title={soundEnabled ? "كتم المؤثرات الصوتية" : "تشغيل نغمات الإنجاز"}
+          className="icon-circle-btn"
+          title={soundEnabled ? "كتم الصوت" : "تشغيل الصوت"}
         >
-          {soundEnabled ? <Volume2 size={18} color="#34d399" /> : <VolumeX size={18} color="#f87171" />}
+          {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
         </button>
+
+        {/* شريط باليت الألوان النيون مع منتقي الألوان المتدرج */}
+        <div className="theme-palette-strip">
+          {/* دائرة عجلة الألوان المخصصة (Custom Rainbow Wheel) */}
+          <div className="color-wheel-wrapper" title="اختر أي لون مخصص يعجبك">
+            <input
+              type="color"
+              value={currentColor}
+              onChange={(e) => onSelectColor(e.target.value)}
+              className="color-wheel-input"
+            />
+          </div>
+
+          {/* دوائر الألوان الجاهزة المستوحاة من الصورة */}
+          {PRESET_THEMES.map((theme) => {
+            const isActive = currentColor.toLowerCase() === theme.color.toLowerCase();
+            return (
+              <button
+                key={theme.id}
+                onClick={() => onSelectColor(theme.color)}
+                className={`palette-circle-btn ${isActive ? "active" : ""}`}
+                style={{ backgroundColor: theme.color }}
+                title={theme.name}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* الشعار الفاخر */}
+      <div className="header-brand-badge">
+        <h1 className="brand-pill-title">
+          <span>منصة المتراكم والمذاكرة</span>
+          <span className="brand-icon-tag">
+            <Sparkles size={14} style={{ display: "inline", marginLeft: "4px", verticalAlign: "middle" }} />
+            ثانوية عامة
+          </span>
+        </h1>
       </div>
     </header>
   );

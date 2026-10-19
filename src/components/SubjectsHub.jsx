@@ -1,21 +1,22 @@
 import React from "react";
 import { SUBJECTS } from "../data/subjects";
+import SubjectIcon from "./SubjectIcon";
 import { ArrowLeft, Check, AlertCircle, Sparkles } from "lucide-react";
 
 export default function SubjectsHub({ tasks, onSelectSubject }) {
   return (
-    <div className="subjects-hub-wrapper animate-entrance">
-      <div className="subjects-hub-header">
-        <h2 className="hub-title">
-          <Sparkles size={22} color="#f59e0b" />
-          المواد الدراسية (الثانوية العامة)
+    <div className="subjects-hub-view">
+      <div className="hub-intro-row">
+        <h2 className="hub-main-title">
+          <Sparkles size={22} color="var(--theme-accent)" />
+          <span>المواد الدراسية ومتابعة المتراكم</span>
         </h2>
-        <p className="hub-subtitle">
-          اختر أي مادة لفتح جدول الدروس المتراكمة وتسجيل وإنجاز المهام فوراً
+        <p className="hub-sub-title">
+          اضغط على أي مادة لفتح جدولها المباشر وتسجيل وإنجاز الدروس المتراكمة
         </p>
       </div>
 
-      <div className="subjects-main-grid">
+      <div className="subjects-3col-grid">
         {SUBJECTS.map((subject) => {
           const subjectTasks = tasks.filter((t) => t.subject === subject.id);
           const pendingTasks = subjectTasks.filter((t) => !t.completed);
@@ -27,70 +28,51 @@ export default function SubjectsHub({ tasks, onSelectSubject }) {
             <div
               key={subject.id}
               onClick={() => onSelectSubject(subject.id)}
-              className="subject-hub-card glass-box"
-              style={{
-                "--card-color": subject.primaryColor,
-                "--card-glow": subject.glow,
-              }}
+              className="subject-luxury-card luxury-glass"
             >
               <div>
-                <div className="card-top-row">
-                  <div className="card-symbol-badge">
-                    {subject.symbol}
+                <div className="subject-card-header">
+                  <div className="subject-svg-icon-box">
+                    <SubjectIcon name={subject.iconName} size={28} color="var(--theme-accent)" />
                   </div>
 
                   {pendingTasks.length > 0 ? (
-                    <span 
-                      className="card-status-pill"
-                      style={{
-                        background: "rgba(239, 68, 68, 0.15)",
-                        color: "#f87171",
-                        border: "1px solid rgba(239, 68, 68, 0.3)"
-                      }}
-                    >
+                    <span className="status-counter-pill has-backlog">
                       <AlertCircle size={13} />
                       <span>{pendingTasks.length} متراكم</span>
                     </span>
                   ) : (
-                    <span 
-                      className="card-status-pill"
-                      style={{
-                        background: "rgba(16, 185, 129, 0.15)",
-                        color: "#34d399",
-                        border: "1px solid rgba(16, 185, 129, 0.3)"
-                      }}
-                    >
+                    <span className="status-counter-pill is-clean">
                       <Check size={13} strokeWidth={3} />
-                      <span>مفيش متراكم! 🎉</span>
+                      <span>نظيف تماماً! 🎉</span>
                     </span>
                   )}
                 </div>
 
-                <h3 className="card-subject-name">
+                <h3 className="subject-luxury-title">
                   مادة {subject.name}
                 </h3>
-                <p className="card-tagline">{subject.tagline}</p>
+                <p className="subject-luxury-desc">
+                  {subject.tagline}
+                </p>
               </div>
 
               <div>
-                {/* شريط نسبة الإنجاز الخاص بالمادة */}
-                <div className="card-progress-bar-bg">
+                {/* شريط الإنجاز المتوهج */}
+                <div className="progress-track-mini">
                   <div 
-                    className="card-progress-bar-fill"
-                    style={{
-                      width: `${progressPercent}%`,
-                      background: subject.gradient
-                    }}
+                    className="progress-fill-mini"
+                    style={{ width: `${progressPercent}%` }}
                   />
                 </div>
 
-                <div className="card-cta-footer">
-                  <span style={{ fontSize: "12.5px", color: "var(--text-secondary)" }}>
-                    تم إنجاز: {completedTasks.length} من {totalTasks}
+                <div className="card-bottom-cta">
+                  <span style={{ fontSize: "12.5px", color: "var(--text-muted)" }}>
+                    تم إنجاز {completedTasks.length} من {totalTasks}
                   </span>
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                     <span>افتح الجدول</span>
-                    <ArrowLeft size={15} />
+                    <ArrowLeft size={16} />
                   </div>
                 </div>
               </div>

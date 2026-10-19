@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { SUBJECTS } from "../data/subjects";
+import SubjectIcon from "./SubjectIcon";
 import { Plus, Trash2, Calendar, FileText, Bell } from "lucide-react";
 
 export default function NotesSection({
@@ -44,32 +45,32 @@ export default function NotesSection({
   };
 
   return (
-    <div className="notes-container animate-entrance">
+    <div className="notes-view-wrapper">
       {/* رأس قسم الملاحظات */}
-      <div className="notes-header-bar">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <h2 style={{ fontSize: "22px", fontWeight: "800", color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
-            <FileText size={22} color="#38bdf8" />
-            الملاحظات ومواعيد الامتحانات
+          <h2 style={{ fontSize: "24px", fontWeight: "900", color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
+            <FileText size={24} color="var(--theme-accent)" />
+            <span>الملاحظات ومواعيد الامتحانات</span>
           </h2>
-          <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "2px" }}>
-            سجل مواعيد امتحانات السناتر والشوامل والملاحظات المهمة لكل مادة
+          <p style={{ fontSize: "13.5px", color: "var(--text-secondary)", marginTop: "3px" }}>
+            سجل مواعيد امتحانات السناتر والشوامل وتنبيهات المدرسين
           </p>
         </div>
 
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="action-btn btn-primary-gradient"
+          className="btn-glow"
         >
           <Plus size={18} />
-          <span>{showAddForm ? "إلغاء" : "إضافة ملاحظة / امتحان"}</span>
+          <span>{showAddForm ? "إلغاء" : "إضافة ملاحظة أو امتحان"}</span>
         </button>
       </div>
 
       {/* نموذج إضافة الملاحظة */}
       {showAddForm && (
-        <form onSubmit={handleSubmit} className="add-lesson-card glass-box animate-entrance" style={{ borderColor: "rgba(56, 189, 248, 0.3)" }}>
-          <h3 style={{ fontSize: "16px", fontWeight: "800", marginBottom: "14px", color: "#38bdf8" }}>
+        <form onSubmit={handleSubmit} className="add-task-luxury-panel luxury-glass" style={{ borderColor: "var(--theme-accent)" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: "900", marginBottom: "14px", color: "var(--theme-accent)" }}>
             ✍️ تفاصيل الملاحظة أو الامتحان القادم
           </h3>
 
@@ -94,7 +95,7 @@ export default function NotesSection({
               <select value={noteSubject} onChange={(e) => setNoteSubject(e.target.value)}>
                 {SUBJECTS.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.symbol} {s.name}
+                    {s.name}
                   </option>
                 ))}
               </select>
@@ -124,11 +125,11 @@ export default function NotesSection({
             />
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-            <button type="button" onClick={() => setShowAddForm(false)} className="action-btn btn-outline">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+            <button type="button" onClick={() => setShowAddForm(false)} className="btn-soft">
               إلغاء
             </button>
-            <button type="submit" className="action-btn btn-primary-gradient" disabled={isSubmitting}>
+            <button type="submit" className="btn-glow" disabled={isSubmitting}>
               حفظ الملاحظة
             </button>
           </div>
@@ -136,19 +137,17 @@ export default function NotesSection({
       )}
 
       {/* شريط الفلاتر */}
-      <div className="notes-filter-strip">
+      <div className="subject-switcher-row" style={{ marginBottom: "24px" }}>
         <button
           onClick={() => setSelectedFilter("all")}
-          className={`quick-pill ${selectedFilter === "all" ? "active" : ""}`}
-          style={{ "--pill-color": "#0284c7" }}
+          className={`switcher-pill-btn ${selectedFilter === "all" ? "active" : ""}`}
         >
           كل الملاحظات ({notes.length})
         </button>
 
         <button
           onClick={() => setSelectedFilter("exams")}
-          className={`quick-pill ${selectedFilter === "exams" ? "active" : ""}`}
-          style={{ "--pill-color": "#ef4444" }}
+          className={`switcher-pill-btn ${selectedFilter === "exams" ? "active" : ""}`}
         >
           <Bell size={13} />
           <span>الامتحانات القادمة</span>
@@ -158,28 +157,27 @@ export default function NotesSection({
           <button
             key={s.id}
             onClick={() => setSelectedFilter(s.id)}
-            className={`quick-pill ${selectedFilter === s.id ? "active" : ""}`}
-            style={{ "--pill-color": s.primaryColor }}
+            className={`switcher-pill-btn ${selectedFilter === s.id ? "active" : ""}`}
           >
-            <span>{s.symbol}</span>
+            <SubjectIcon name={s.iconName} size={14} />
             <span>{s.name}</span>
           </button>
         ))}
       </div>
 
-      {/* شبكة كروت الملاحظات */}
+      {/* كروت الملاحظات */}
       {filteredNotes.length === 0 ? (
-        <div className="clean-slate-box glass-box">
-          <div className="clean-slate-icon">📝</div>
-          <div className="clean-slate-title" style={{ color: "#38bdf8" }}>
+        <div className="table-luxury-wrap luxury-glass" style={{ textAlign: "center", padding: "50px 20px" }}>
+          <div style={{ fontSize: "44px", marginBottom: "12px" }}>📝</div>
+          <h4 style={{ fontSize: "19px", fontWeight: "800", color: "var(--theme-accent)", marginBottom: "6px" }}>
             لا توجد ملاحظات مسجلة هنا
-          </div>
-          <p className="clean-slate-desc">
-            تقدر تسجل امتحاناتك القادمة وملاحظات المواد المهمة عشان تكون دايماً عارف جدولك ومواعيدك بدقة!
+          </h4>
+          <p style={{ fontSize: "13.5px", color: "var(--text-secondary)" }}>
+            سجل امتحاناتك القادمة وملاحظات المواد المهمة عشان تكون دايماً عارف مواعيدك بدقة!
           </p>
         </div>
       ) : (
-        <div className="notes-grid-cards">
+        <div className="notes-main-grid">
           {filteredNotes.map((note) => {
             const subjectObj = SUBJECTS.find((s) => s.id === note.subject);
 
@@ -209,13 +207,12 @@ export default function NotesSection({
             return (
               <div
                 key={note.id}
-                className="single-note-card glass-box"
-                style={{ borderRightColor: subjectObj?.primaryColor || "#38bdf8" }}
+                className="note-item-card luxury-glass"
               >
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "5px", color: subjectObj?.primaryColor, fontWeight: "700", fontSize: "13px" }}>
-                      <span>{subjectObj?.symbol}</span>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--theme-accent)", fontWeight: "800", fontSize: "13.5px" }}>
+                      <SubjectIcon name={subjectObj?.iconName} size={16} />
                       <span>{subjectObj?.name}</span>
                     </div>
 
@@ -223,11 +220,12 @@ export default function NotesSection({
                       <span
                         style={{
                           fontSize: "12px",
-                          fontWeight: "700",
+                          fontWeight: "800",
                           color: isUrgent ? "#f87171" : "#fbbf24",
-                          background: isUrgent ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)",
-                          padding: "3px 8px",
-                          borderRadius: "6px"
+                          background: isUrgent ? "rgba(239, 68, 68, 0.2)" : "rgba(245, 158, 11, 0.2)",
+                          padding: "3px 10px",
+                          borderRadius: "999px",
+                          border: isUrgent ? "1px solid rgba(239, 68, 68, 0.4)" : "1px solid rgba(245, 158, 11, 0.4)"
                         }}
                       >
                         {daysText}
@@ -235,7 +233,7 @@ export default function NotesSection({
                     )}
                   </div>
 
-                  <h3 style={{ fontSize: "16px", fontWeight: "800", color: "#ffffff", marginBottom: "6px" }}>
+                  <h3 style={{ fontSize: "17px", fontWeight: "900", color: "#ffffff", marginBottom: "8px" }}>
                     {note.title}
                   </h3>
 
@@ -246,9 +244,9 @@ export default function NotesSection({
                   )}
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.05)", marginTop: "12px", fontSize: "12px", color: "var(--text-tertiary)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.06)", marginTop: "14px", fontSize: "12px", color: "var(--text-muted)" }}>
                   {note.date ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                       <Calendar size={13} />
                       <span>{note.date}</span>
                     </div>
@@ -256,10 +254,10 @@ export default function NotesSection({
 
                   <button
                     onClick={() => onDeleteNote(note.id)}
-                    className="delete-btn-subtle"
+                    className="delete-action-btn"
                     title="حذف الملاحظة"
                   >
-                    <Trash2 size={15} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>

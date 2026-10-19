@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { SUBJECTS, TASK_TYPES, PRIORITY_LEVELS } from "../data/subjects";
+import SubjectIcon from "./SubjectIcon";
 import { ArrowRight, Plus, Check, Trash2, Eye, EyeOff, BookOpen, Trophy } from "lucide-react";
 
 export default function SubjectWorkspace({
@@ -42,26 +43,23 @@ export default function SubjectWorkspace({
   };
 
   return (
-    <div className="subject-workspace animate-entrance">
-      {/* شريط علوي للعودة والتنقل السريع بين المواد */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px", marginBottom: "16px" }}>
-        <button onClick={onBackToHub} className="back-to-hub-btn">
+    <div className="subject-workspace-view">
+      {/* شريط العودة والتنقل السريع */}
+      <div className="workspace-top-bar">
+        <button onClick={onBackToHub} className="btn-soft">
           <ArrowRight size={17} />
-          <span>العودة لكافة المواد</span>
+          <span>العودة للمواد كلها</span>
         </button>
 
         {/* أزرار التبديل السريع بين المواد الستة */}
-        <div className="subject-quick-pills-bar" style={{ margin: 0 }}>
+        <div className="subject-switcher-row">
           {SUBJECTS.map((s) => (
             <button
               key={s.id}
               onClick={() => onSelectSubject(s.id)}
-              className={`quick-pill ${s.id === subject.id ? "active" : ""}`}
-              style={{
-                "--pill-color": s.primaryColor
-              }}
+              className={`switcher-pill-btn ${s.id === subject.id ? "active" : ""}`}
             >
-              <span>{s.symbol}</span>
+              <SubjectIcon name={s.iconName} size={15} />
               <span>{s.name}</span>
             </button>
           ))}
@@ -69,52 +67,47 @@ export default function SubjectWorkspace({
       </div>
 
       {/* بطاقة رأس المادة المختارة */}
-      <div 
-        className="active-subject-header glass-box"
-        style={{
-          borderRight: `6px solid ${subject.primaryColor}`
-        }}
-      >
-        <div className="subject-header-right">
-          <div className="card-symbol-badge" style={{ fontSize: "32px", width: "60px", height: "60px" }}>
-            {subject.symbol}
+      <div className="workspace-hero-banner luxury-glass">
+        <div className="workspace-hero-info">
+          <div className="workspace-hero-icon">
+            <SubjectIcon name={subject.iconName} size={36} color="var(--theme-accent)" />
           </div>
           <div>
-            <h2 className="active-subject-title">
+            <h2 className="workspace-hero-title">
               جدول متراكم مادة {subject.name}
             </h2>
-            <p className="active-subject-tip">
+            <p className="workspace-hero-tip">
               💡 {subject.tip}
             </p>
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "14px", fontWeight: "700" }}>
-          <span style={{ padding: "6px 14px", borderRadius: "999px", background: "rgba(239, 68, 68, 0.15)", color: "#f87171", border: "1px solid rgba(239, 68, 68, 0.3)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "800" }}>
+          <span className="status-counter-pill has-backlog">
             المتراكم: {activeTasks.length}
           </span>
-          <span style={{ padding: "6px 14px", borderRadius: "999px", background: "rgba(16, 185, 129, 0.15)", color: "#34d399", border: "1px solid rgba(16, 185, 129, 0.3)" }}>
+          <span className="status-counter-pill is-clean">
             المنجز: {completedTasks.length}
           </span>
         </div>
       </div>
 
-      {/* لوحة إضافة درس للمتراكم في هذه المادة */}
-      <div className="add-lesson-card glass-box">
+      {/* لوحة إضافة درس متراكم جديد في هذه المادة */}
+      <div className="add-task-luxury-panel luxury-glass">
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
-          <BookOpen size={18} color={subject.primaryColor} />
+          <BookOpen size={18} color="var(--theme-accent)" />
           <h3 style={{ fontSize: "16px", fontWeight: "800", color: "#ffffff" }}>
-            تسجيل درس متراكم جديد في {subject.name}
+            تسجيل درس متراكم في مادة {subject.name}
           </h3>
         </div>
 
-        <form onSubmit={handleSubmit} className="add-form-layout">
-          {/* اسم الدرس أو الجزء */}
+        <form onSubmit={handleSubmit} className="add-task-grid-inputs">
+          {/* اسم الدرس */}
           <input
             type="text"
             value={lessonTitle}
             onChange={(e) => setLessonTitle(e.target.value)}
-            placeholder="اكتب هنا اسم الدرس أو الجزء المتأخر فيه (مثال: مسائل كيرشوف والدوائر)..."
+            placeholder="اكتب هنا اسم الدرس أو الجزء المتأخر فيه..."
             required
           />
 
@@ -136,17 +129,12 @@ export default function SubjectWorkspace({
             ))}
           </select>
 
-          {/* زر الإضافة */}
+          {/* زر الإضافة المضيء */}
           <button 
             type="submit" 
-            className="action-btn"
+            className="btn-glow"
             disabled={isSubmitting}
-            style={{
-              background: subject.gradient,
-              color: "#ffffff",
-              whiteSpace: "nowrap",
-              boxShadow: `0 4px 16px ${subject.glow}`
-            }}
+            style={{ whiteSpace: "nowrap" }}
           >
             <Plus size={18} />
             <span>إضافة للجدول</span>
@@ -155,45 +143,45 @@ export default function SubjectWorkspace({
       </div>
 
       {/* جدول المتراكم المباشر للمادة */}
-      <div className="table-card-wrapper glass-box">
-        <div className="table-top-bar">
-          <h3 style={{ fontSize: "17px", fontWeight: "800", color: "#ffffff" }}>
+      <div className="table-luxury-wrap luxury-glass">
+        <div className="table-header-strip">
+          <h3 style={{ fontSize: "17px", fontWeight: "900", color: "#ffffff" }}>
             جدول المتراكم لمادة {subject.name} ({activeTasks.length})
           </h3>
 
           {completedTasks.length > 0 && (
             <button
               onClick={() => setShowArchive(!showArchive)}
-              className="action-btn btn-outline"
-              style={{ fontSize: "12.5px", padding: "6px 14px" }}
+              className="btn-soft"
+              style={{ fontSize: "12.5px", padding: "6px 16px" }}
             >
               {showArchive ? <EyeOff size={15} /> : <Eye size={15} />}
-              <span>{showArchive ? "إخفاء المنجز" : `عرض ما تم إنجازه (${completedTasks.length})`}</span>
+              <span>{showArchive ? "إخفاء ما تم إنجازه" : `عرض ما تم إنجازه (${completedTasks.length})`}</span>
             </button>
           )}
         </div>
 
         {activeTasks.length === 0 ? (
-          <div className="clean-slate-box">
-            <div className="clean-slate-icon">🎉</div>
-            <div className="clean-slate-title">
-              عاش يا بطل! مفيش أي متراكم عليك في {subject.name}
-            </div>
-            <p className="clean-slate-desc">
-              جدول المادة نظيف تماماً ومخلص كل اللي وراك. لما تحتاج تضيف أي درس جديد، اكتبه في الخانة اللي فوق وهيظهر في جدولك فوراً!
+          <div style={{ textAlign: "center", padding: "50px 20px" }}>
+            <div style={{ fontSize: "48px", marginBottom: "12px" }}>🎉</div>
+            <h4 style={{ fontSize: "20px", fontWeight: "900", color: "#34d399", marginBottom: "8px" }}>
+              عاش يا بطل! مفيش أي متراكم عليك في مادة {subject.name}
+            </h4>
+            <p style={{ fontSize: "14px", color: "var(--text-secondary)", maxWidth: "420px", margin: "0 auto" }}>
+              جدول المادة نظيف ومخلص كل اللي وراك. لو راكمت أي حاجة جديدة، اكتبها فوق وهتنزل في جدولك فوراً!
             </p>
           </div>
         ) : (
-          <div className="table-responsive-container">
-            <table className="study-table">
+          <div style={{ overflowX: "auto" }}>
+            <table className="luxury-study-table">
               <thead>
                 <tr>
                   <th style={{ width: "50px" }}>#</th>
                   <th>الدرس / الجزء المتراكم</th>
                   <th style={{ width: "170px" }}>نوع المذاكرة</th>
                   <th style={{ width: "160px" }}>الأولوية</th>
-                  <th style={{ width: "120px", textAlign: "center" }}>إنجاز (صح)</th>
-                  <th style={{ width: "70px", textAlign: "center" }}>حذف</th>
+                  <th style={{ width: "110px", textAlign: "center" }}>إنجاز المهمة</th>
+                  <th style={{ width: "65px", textAlign: "center" }}>حذف</th>
                 </tr>
               </thead>
               <tbody>
@@ -202,20 +190,20 @@ export default function SubjectWorkspace({
                   const priorityObj = PRIORITY_LEVELS.find((p) => p.id === task.priority) || PRIORITY_LEVELS[1];
 
                   return (
-                    <tr key={task.id} className="table-row-hover">
-                      <td style={{ fontWeight: "700", color: "var(--text-tertiary)" }}>
+                    <tr key={task.id} className="row-hover-glow">
+                      <td style={{ fontWeight: "800", color: "var(--text-muted)" }}>
                         {idx + 1}
                       </td>
-                      <td className="lesson-title-cell">
+                      <td className="task-title-text">
                         {task.title}
                       </td>
                       <td>
                         <span 
-                          className="badge-pill"
+                          className="task-tag-badge"
                           style={{
-                            background: `${typeObj.color}15`,
+                            background: `${typeObj.color}20`,
                             color: typeObj.color,
-                            border: `1px solid ${typeObj.color}35`
+                            border: `1px solid ${typeObj.color}40`
                           }}
                         >
                           {typeObj.label}
@@ -223,11 +211,11 @@ export default function SubjectWorkspace({
                       </td>
                       <td>
                         <span 
-                          className="badge-pill"
+                          className="task-tag-badge"
                           style={{
-                            background: `${priorityObj.color}15`,
+                            background: `${priorityObj.color}20`,
                             color: priorityObj.color,
-                            border: `1px solid ${priorityObj.color}35`
+                            border: `1px solid ${priorityObj.color}40`
                           }}
                         >
                           {priorityObj.label}
@@ -237,7 +225,7 @@ export default function SubjectWorkspace({
                         <button
                           type="button"
                           onClick={() => onCompleteTask(task)}
-                          className="check-completion-btn"
+                          className="complete-checkmark-btn"
                           title="اضغط هنا لإتمام المهمة وإزالتها من الجدول والاحتفال!"
                         >
                           <Check size={22} strokeWidth={3} />
@@ -247,7 +235,7 @@ export default function SubjectWorkspace({
                         <button
                           type="button"
                           onClick={() => onDeleteTask(task.id)}
-                          className="delete-btn-subtle"
+                          className="delete-action-btn"
                           title="حذف المهمة"
                         >
                           <Trash2 size={16} />
@@ -262,24 +250,24 @@ export default function SubjectWorkspace({
         )}
       </div>
 
-      {/* قسم أرشيف الدروس المنجزة */}
+      {/* سجل الأرشيف للدروس التي تم إنجازها */}
       {showArchive && completedTasks.length > 0 && (
-        <div className="table-card-wrapper glass-box animate-entrance" style={{ borderColor: "rgba(16, 185, 129, 0.3)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px" }}>
+        <div className="table-luxury-wrap luxury-glass" style={{ borderColor: "rgba(16, 185, 129, 0.4)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 14px" }}>
             <Trophy size={18} color="#10b981" />
-            <h4 style={{ fontSize: "16px", fontWeight: "800", color: "#34d399" }}>
-              الدروس التي تم التخلص منها بنجاح ({completedTasks.length})
+            <h4 style={{ fontSize: "16px", fontWeight: "900", color: "#34d399" }}>
+              سجل الدروس المنجزة بنجاح ({completedTasks.length})
             </h4>
           </div>
 
-          <div className="table-responsive-container">
-            <table className="study-table">
+          <div style={{ overflowX: "auto" }}>
+            <table className="luxury-study-table">
               <thead>
                 <tr>
                   <th style={{ width: "50px" }}>#</th>
                   <th>الدرس المنجز</th>
                   <th style={{ width: "160px" }}>النوع</th>
-                  <th style={{ width: "100px", textAlign: "center" }}>إعادة للجدول</th>
+                  <th style={{ width: "110px", textAlign: "center" }}>إعادة للجدول</th>
                 </tr>
               </thead>
               <tbody>
@@ -290,14 +278,14 @@ export default function SubjectWorkspace({
                       {task.title}
                     </td>
                     <td>
-                      <span className="badge-pill" style={{ background: "rgba(255, 255, 255, 0.05)", color: "var(--text-tertiary)" }}>
+                      <span className="task-tag-badge" style={{ background: "rgba(255, 255, 255, 0.06)", color: "var(--text-muted)" }}>
                         {task.type}
                       </span>
                     </td>
                     <td style={{ textAlign: "center" }}>
                       <button
                         onClick={() => onToggleUndoTask(task)}
-                        className="action-btn btn-outline"
+                        className="btn-soft"
                         style={{ fontSize: "12px", padding: "4px 12px" }}
                       >
                         استرجاع

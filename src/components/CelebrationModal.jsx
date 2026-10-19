@@ -10,10 +10,10 @@ export default function CelebrationModal({
 }) {
   useEffect(() => {
     try {
-      const count = 180;
+      const count = 200;
       const defaults = {
-        origin: { y: 0.7 },
-        zIndex: 99999
+        origin: { y: 0.65 },
+        zIndex: 999999
       };
 
       function fire(particleRatio, opts) {
@@ -37,52 +37,48 @@ export default function CelebrationModal({
   const randomPhrase = MOTIVATIONAL_MESSAGES[Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)];
 
   return (
-    <div className="modal-overlay animate-entrance" onClick={onClose}>
+    <div className="celebrate-popup-overlay" onClick={onClose}>
       <div 
-        className="modal-card" 
+        className="celebrate-popup-box" 
         onClick={(e) => e.stopPropagation()}
-        style={{ borderColor: subject?.primaryColor || "#f59e0b" }}
       >
-        <div className="modal-fire-circle">
+        <div className="celebrate-fire-badge">
           🔥
         </div>
 
-        <h2 className="modal-celebration-title">
+        <h2 className="celebrate-title">
           عاااش مووووت! 💪
         </h2>
 
-        <p style={{ fontSize: "18px", fontWeight: "800", color: "#ffffff", marginBottom: "8px" }}>
+        <p className="celebrate-subtext">
           فخور بيك جداً.. كمل متوقفش! 🏆
         </p>
 
         {task && (
-          <div className="modal-task-badge">
+          <div style={{ display: "inline-block", padding: "6px 16px", borderRadius: "999px", background: "rgba(255, 255, 255, 0.08)", color: "var(--theme-accent)", fontSize: "14px", fontWeight: "800", marginBottom: "16px" }}>
             <span>خلصت: {task.title}</span>
             {subject && <span> ({subject.name})</span>}
           </div>
         )}
 
-        <p className="modal-celebration-text">
+        <p style={{ fontSize: "15px", color: "#f1d4eb", lineHeight: "1.6", marginBottom: "24px" }}>
           {randomPhrase}
         </p>
 
         <button 
           onClick={onClose} 
-          className="action-btn"
+          className="btn-glow"
           style={{
             width: "100%",
             padding: "14px",
             fontSize: "16px",
-            background: "linear-gradient(135deg, #f59e0b, #d97706)",
-            color: "#ffffff",
-            boxShadow: "0 6px 20px rgba(245, 158, 11, 0.4)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: "8px"
           }}
         >
-          <span>استمر يا بطل، اللي بعده يلا!</span>
+          <span>استمر يا وحش، اللي بعده يلا!</span>
           <ArrowLeft size={18} />
         </button>
       </div>

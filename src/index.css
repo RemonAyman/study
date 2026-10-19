@@ -1,32 +1,43 @@
-/* index.css - التصميم العصري والمبهج لطلاب الثانوية العامة */
+/* index.css - التصميم الاحترافي الفاخر مع نظام الثيمات المخصص */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap');
+
 :root {
   --font-arabic: 'Cairo', system-ui, -apple-system, sans-serif;
   --font-english: 'Outfit', sans-serif;
 
-  /* لوحة ألوان دافئة، مبهجة، ومريحة جداً للعين للثانوية العامة */
-  --bg-app: #0b1120;
-  --bg-surface: #111a2e;
-  --bg-card: rgba(18, 27, 47, 0.85);
-  --bg-card-hover: rgba(25, 38, 66, 0.95);
-  --bg-input: #0e172a;
+  /* اللون الافتراضي المستوحى بدقة من الصورة (Neon Berry / Magenta Luxury) */
+  --theme-accent: #ff2a85;
+  --theme-accent-hover: #e01e69;
+  --theme-accent-glow: rgba(255, 42, 133, 0.45);
+  --theme-accent-subtle: rgba(255, 42, 133, 0.12);
+  --theme-accent-border: rgba(255, 42, 133, 0.3);
+
+  /* خلفيات مظلمة ملكية مريحة جداً ومطابقة للصورة */
+  --bg-app: #12040f;
+  --bg-surface: #1a0816;
+  --bg-card: rgba(27, 10, 23, 0.75);
+  --bg-card-hover: rgba(36, 14, 31, 0.88);
+  --bg-input: rgba(18, 5, 15, 0.9);
 
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: #38bdf8;
+  --border-glow: rgba(255, 42, 133, 0.25);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #e2b8d6;
+  --text-muted: #9c6c8f;
 
-  --radius-sm: 10px;
-  --radius-md: 16px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
   --radius-lg: 24px;
   --radius-xl: 32px;
+  --radius-full: 9999px;
 
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 12px 36px -8px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+  --shadow-glow: 0 0 35px var(--theme-accent-glow);
+  --shadow-card: 0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(255, 255, 255, 0.06);
 }
 
-* {
+/* إعادة ضبط كاملة لإزالة أي أنماط قبيحة للمتصفح */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -43,136 +54,144 @@ html, body {
   line-height: 1.6;
 }
 
-/* خلفية حيوية متدرجة تفتح النفس للمذاكرة */
+/* خلفية متوهجة فاخرة بأضواء نيونية خلفية تطابق الصورة */
 body {
   background-image: 
-    radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 90% 20%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.06) 0%, transparent 50%);
+    radial-gradient(circle at 50% 8%, var(--theme-accent-glow) 0%, transparent 60%),
+    radial-gradient(circle at 10% 40%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 90% 75%, var(--theme-accent-glow) 0%, transparent 55%);
   background-attachment: fixed;
+  background-repeat: no-repeat;
+  transition: background-image 0.5s ease;
 }
 
-/* شريط تمرير ناعم ومريح */
+/* شريط التمرير */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-app);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
+  background: var(--theme-accent-subtle);
+  border: 1px solid var(--theme-accent-border);
+  border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--theme-accent);
 }
 
-/* الحاوية الرئيسية للتطبيق المتجاوبة كلياً */
-.app-wrapper {
-  max-width: 1200px;
+/* الحاوية المتجاوبة */
+.app-container {
+  max-width: 1140px;
   margin: 0 auto;
-  padding: 16px 20px 80px 20px;
+  padding: 24px 20px 80px 20px;
   width: 100%;
 }
 
 @media (max-width: 640px) {
-  .app-wrapper {
-    padding: 12px 14px 60px 14px;
+  .app-container {
+    padding: 16px 14px 60px 14px;
   }
 }
 
-/* بطاقات زجاجية عصرية بتأثير React Bits */
-.glass-box {
+/* البطاقة الزجاجية المتوهجة (Glassmorphism Luxury) */
+.luxury-glass {
   background: var(--bg-card);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glow);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
-/* أزرار احترافية */
-.action-btn {
+.luxury-glass:hover {
+  border-color: var(--theme-accent);
+  box-shadow: 0 16px 45px -8px rgba(0, 0, 0, 0.8), 0 0 25px var(--theme-accent-glow);
+}
+
+/* أزرار مضيئة فخمة */
+.btn-glow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 26px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-arabic);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover));
+  color: #ffffff;
+  box-shadow: 0 0 25px var(--theme-accent-glow);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.btn-glow:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.12);
+  box-shadow: 0 0 35px var(--theme-accent-glow);
+}
+
+.btn-glow:active {
+  transform: scale(0.97);
+}
+
+/* أزرار شفافة ناعمة */
+.btn-soft {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 11px 22px;
-  border-radius: var(--radius-md);
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
   font-family: var(--font-arabic);
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  border: none;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-  user-select: none;
-}
-
-.action-btn:active {
-  transform: scale(0.96);
-}
-
-.btn-primary-gradient {
-  background: linear-gradient(135deg, #0ea5e9, #3b82f6);
-  color: #ffffff;
-  box-shadow: 0 4px 18px rgba(14, 165, 233, 0.4);
-}
-.btn-primary-gradient:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 6px 24px rgba(14, 165, 233, 0.55);
-}
-
-.btn-outline {
   background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
   border: 1px solid var(--border-subtle);
-}
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
 }
 
-/* حقول الإدخال المحمية والمنسقة */
+.btn-soft:hover {
+  background: var(--theme-accent-subtle);
+  border-color: var(--theme-accent-border);
+  color: #ffffff;
+}
+
+/* حقول الإدخال بدون أي حدود قديمة للمتصفح */
 input[type="text"],
 input[type="date"],
 select,
 textarea {
   width: 100%;
-  padding: 13px 18px;
+  padding: 14px 18px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-glow);
   background: var(--bg-input);
   color: var(--text-primary);
   font-family: var(--font-arabic);
   font-size: 14.5px;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: all 0.25s ease;
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 0 3px var(--theme-accent-subtle), 0 0 20px var(--theme-accent-glow);
 }
 
 input::placeholder, textarea::placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   font-size: 13.5px;
-}
-
-/* أنيميشن ناعم */
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-entrance {
-  animation: fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

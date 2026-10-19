@@ -12,12 +12,16 @@ import {
 } from "./firebase";
 import { SUBJECTS } from "./data/subjects";
 import { soundFx } from "./utils/sound";
+import { applyTheme } from "./utils/theme";
+import "./App.css";
 
 import Header from "./components/Header";
 import SubjectsHub from "./components/SubjectsHub";
 import SubjectWorkspace from "./components/SubjectWorkspace";
 import NotesSection from "./components/NotesSection";
 import CelebrationModal from "./components/CelebrationModal";
+
+import { BookOpen, FileText } from "lucide-react";
 
 // بيانات ابتدائية واقعية لطلاب الثانوية العامة (علمي)
 const INITIAL_TASKS = [
@@ -91,7 +95,7 @@ const INITIAL_NOTES = [
 export default function App() {
   const [tasks, setTasks] = useState(() => {
     try {
-      const saved = localStorage.getItem("study_v2_tasks");
+      const saved = localStorage.getItem("study_v3_tasks");
       return saved ? JSON.parse(saved) : INITIAL_TASKS;
     } catch {
       return INITIAL_TASKS;
@@ -100,7 +104,7 @@ export default function App() {
 
   const [notes, setNotes] = useState(() => {
     try {
-      const saved = localStorage.getItem("study_v2_notes");
+      const saved = localStorage.getItem("study_v3_notes");
       return saved ? JSON.parse(saved) : INITIAL_NOTES;
     } catch {
       return INITIAL_NOTES;
@@ -110,15 +114,23 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("subjects"); // "subjects" | "notes"
   const [currentSubjectId, setCurrentSubjectId] = useState(null); // null = All Subjects Hub
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [currentColor, setCurrentColor] = useState(() => {
+    return localStorage.getItem("study_custom_color") || "#ff2a85";
+  });
   const [celebrationData, setCelebrationData] = useState(null);
+
+  // تطبيق الثيم الأولي
+  useEffect(() => {
+    applyTheme(currentColor);
+  }, [currentColor]);
 
   // مزامنة التخزين المحلي
   useEffect(() => {
-    localStorage.setItem("study_v2_tasks", JSON.stringify(tasks));
+    localStorage.setItem("study_v3_tasks", JSON.stringify(tasks));
   }, [tasks]);
 
   useEffect(() => {
-    localStorage.setItem("study_v2_notes", JSON.stringify(notes));
+    localStorage.setItem("study_v3_notes", JSON.stringify(notes));
   }, [notes]);
 
   // استرجاع تفضيلات الصوت
@@ -147,7 +159,6 @@ export default function App() {
           }
         },
         (err) => {
-          // التعامل الصامت مع أخطاء الشبكة أو الصلاحيات دون إزعاج المستخدم
           console.warn("Firestore tasks listener:", err);
         }
       );
@@ -182,6 +193,12 @@ export default function App() {
     }
   }, []);
 
+  // تغيير اللون الحي
+  const handleSelectColor = (color) => {
+    setCurrentColor(color);
+    applyTheme(color);
+  };
+
   // تبديل الصوت
   const handleToggleSound = () => {
     const nextVal = !soundEnabled;
@@ -201,10 +218,8 @@ export default function App() {
       createdAt: new Date().toISOString()
     };
 
-    // إضافة محلية فورية للاستجابة السريعة
     setTasks((prev) => [newTask, ...prev]);
 
-    // المزامنة مع كوليكشن tasks في فايربيز
     try {
       const docRef = await addDoc(collection(db, "tasks"), {
         ...taskData,
@@ -220,19 +235,15 @@ export default function App() {
 
   // إنجاز الدرس (علامة الصح + الاحتفال + إزالة من الجدول)
   const handleCompleteTask = async (task) => {
-    // 1. صوت الاحتفال
     soundFx.playCelebration();
 
-    // 2. نافذة الاحتفال الفخمة مع الكونفيتي والرسالة
     const subjectObj = SUBJECTS.find((s) => s.id === task.subject);
     setCelebrationData({ task, subject: subjectObj });
 
-    // 3. التحديث الفوري لإزالة الدرس من الجدول النشط
     setTasks((prev) =>
       prev.map((t) => (t.id === task.id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t))
     );
 
-    // 4. التحديث في فايربيز
     try {
       if (!task.id.startsWith("sample-") && !task.id.startsWith("local-")) {
         const taskRef = doc(db, "tasks", task.id);
@@ -314,23 +325,38 @@ export default function App() {
   const selectedSubjectObj = SUBJECTS.find((s) => s.id === currentSubjectId);
 
   return (
-    <div className="app-wrapper">
-      {/* الشريط العلوي بدون أي أزرار أو تنبيهات تخص الكود أو الفايربيز */}
+    <div className="app-container">
+      {/* 1. الشريط العلوي مع منتقي الألوان المستوحى من الصورة */}
       <Header
-        activeTab={activeTab}
-        onSelectTab={(tab) => {
-          setActiveTab(tab);
-          if (tab === "subjects" && currentSubjectId) {
-            // الرجوع لصفحة المواد الرئيسية عند الضغط على التبويب
-            setCurrentSubjectId(null);
-          }
-        }}
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
-        notesCount={notes.length}
+        currentColor={currentColor}
+        onSelectColor={handleSelectColor}
       />
 
-      {/* المحتوى الرئيسي */}
+      {/* 2. شريط التبويبات الفخم */}
+      <div className="sub-nav-tabs">
+        <button
+          onClick={() => {
+            setActiveTab("subjects");
+            if (currentSubjectId) setCurrentSubjectId(null);
+          }}
+          className={`nav-tab-pill ${activeTab === "subjects" ? "active" : ""}`}
+        >
+          <BookOpen size={17} />
+          <span>المواد والجدول المتراكم</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("notes")}
+          className={`nav-tab-pill ${activeTab === "notes" ? "active" : ""}`}
+        >
+          <FileText size={17} />
+          <span>الملاحظات والامتحانات ({notes.length})</span>
+        </button>
+      </div>
+
+      {/* 3. المحتوى الرئيسي */}
       <main>
         {activeTab === "subjects" ? (
           currentSubjectId && selectedSubjectObj ? (
@@ -346,7 +372,7 @@ export default function App() {
               onToggleUndoTask={handleToggleUndoTask}
             />
           ) : (
-            /* الواجهة الأولى: كل المواد الستة واضحة ومباشرة أمام الطالب */
+            /* الواجهة الرئيسية: المواد الستة واضحة ومباشرة أمام الطالب */
             <SubjectsHub
               tasks={tasks}
               onSelectSubject={(id) => setCurrentSubjectId(id)}
@@ -362,7 +388,7 @@ export default function App() {
         )}
       </main>
 
-      {/* نافذة الاحتفال المبهجة عند إنجاز المهمة (عاااش مووووت!) */}
+      {/* 4. نافذة الاحتفال (عاااش مووووت!) */}
       {celebrationData && (
         <CelebrationModal
           task={celebrationData.task}

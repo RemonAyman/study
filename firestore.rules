@@ -1,7 +1,18 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // السماح بالقراءة والكتابة لكافة الجداول (المهام والملاحظات والإحصائيات)
+    
+    // 1. جدول الدروس المتراكمة (tasks collection)
+    match /tasks/{taskId} {
+      allow read, write: if true;
+    }
+
+    // 2. جدول الملاحظات ومواعيد الامتحانات (notes collection)
+    match /notes/{noteId} {
+      allow read, write: if true;
+    }
+
+    // السماح العام لضمان عمل كافة الوظائف والمزامنة السحابية
     match /{document=**} {
       allow read, write: if true;
     }

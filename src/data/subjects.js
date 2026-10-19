@@ -4,87 +4,87 @@ export const SUBJECTS = [
     name: "كيمياء",
     englishName: "Chemistry",
     symbol: "🧪",
-    themeColor: "#10b981", // Emerald
-    gradient: "linear-gradient(135deg, #10b981, #059669)",
-    bgSoft: "rgba(16, 185, 129, 0.12)",
-    borderGlow: "rgba(16, 185, 129, 0.35)",
-    quote: "الكيمياء سر المادة.. وأنت سر تفوقك!",
-    advice: "حل بيدك كل معادلة ومسائل الباب الثاني والكهربية."
+    primaryColor: "#10b981",
+    secondaryColor: "#06b6d4",
+    gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+    glow: "rgba(16, 185, 129, 0.35)",
+    tagline: "معادلات وتجارب.. سهلة بالورقة والقلم!",
+    tip: "الباب الثاني والعضوية محتاجين حل وتثبيت أول بأول"
   },
   {
     id: "physics",
     name: "فيزياء",
     englishName: "Physics",
     symbol: "⚡",
-    themeColor: "#3b82f6", // Electric Blue
-    gradient: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
-    bgSoft: "rgba(59, 130, 246, 0.12)",
-    borderGlow: "rgba(59, 130, 246, 0.35)",
-    quote: "الفيزياء فهم وتخيل.. الرسم البياني مفتاح الحل!",
-    advice: "افهم فكرة القانون قبل حفظه وطبق على كيرشوف والدينامو."
+    primaryColor: "#38bdf8",
+    secondaryColor: "#6366f1",
+    gradient: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
+    glow: "rgba(14, 165, 233, 0.35)",
+    tagline: "فهم واستنتاج.. مفيش مسألة هتقف قدامك!",
+    tip: "كيرشوف والدينامو افهم فكرتهم والحل هيكون متعة"
   },
   {
     id: "biology",
     name: "أحياء",
     englishName: "Biology",
     symbol: "🧬",
-    themeColor: "#059669", // Vibrant Emerald/Mint
-    gradient: "linear-gradient(135deg, #059669, #047857)",
-    bgSoft: "rgba(5, 150, 105, 0.12)",
-    borderGlow: "rgba(5, 150, 105, 0.35)",
-    quote: "عظمة الخلق وإبداع الحياة.. ركز في أدق التفاصيل.",
-    advice: "اربط بين أجزاء المناعة والـ DNA ولا تترك ملحوظة صغيرة."
+    primaryColor: "#22c55e",
+    secondaryColor: "#10b981",
+    gradient: "linear-gradient(135deg, #22c55e 0%, #15803d 100%)",
+    glow: "rgba(34, 197, 94, 0.35)",
+    tagline: "علم الحياة.. الفهم يخليك تجاوب أي فكرة مركبة!",
+    tip: "التكاثر والمناعة والـ DNA دايماً راجع رسوماتهم"
   },
   {
     id: "arabic",
-    name: "لغة عربية",
+    name: "عربي",
     englishName: "Arabic",
     symbol: "📖",
-    themeColor: "#f59e0b", // Warm Amber
-    gradient: "linear-gradient(135deg, #f59e0b, #d97706)",
-    bgSoft: "rgba(245, 158, 11, 0.12)",
-    borderGlow: "rgba(245, 158, 11, 0.35)",
-    quote: "لغة الضاد بحر لا ساحل له.. والنحو درجات مضمونة بالإعراب السليم.",
-    advice: "حدد أركان الجملة قبل الإعراب واستخرج سر الجمال في البلاغة."
+    primaryColor: "#f59e0b",
+    secondaryColor: "#ea580c",
+    gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+    glow: "rgba(245, 158, 11, 0.35)",
+    tagline: "لغة الضاد.. النحو والقراءة درجات مضمونة!",
+    tip: "افهم معنى الجملة قبل الإعراب وركز في العلاقات البلاغية"
   },
   {
     id: "english",
-    name: "لغة إنجليزية",
+    name: "إنجليزي",
     englishName: "English",
     symbol: "🌍",
-    themeColor: "#8b5cf6", // Radiant Violet
-    gradient: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
-    bgSoft: "rgba(139, 92, 246, 0.12)",
-    borderGlow: "rgba(139, 92, 246, 0.35)",
-    quote: "Success is the sum of small efforts, repeated day in and day out.",
-    advice: "احفظ الكلمات في سياق وحل قطعة فهم يومياً لتثبيت المهارة."
+    primaryColor: "#ec4899",
+    secondaryColor: "#a855f7",
+    gradient: "linear-gradient(135deg, #ec4899 0%, #9333ea 100%)",
+    glow: "rgba(236, 72, 153, 0.35)",
+    tagline: "Make it happen.. كلماتك وقواعدك في جيبك!",
+    tip: "احفظ الكلمات في جمل وحل قطعة فهم أسبوعياً"
   },
   {
     id: "geology",
     name: "جيولوجيا",
     englishName: "Geology",
     symbol: "🪨",
-    themeColor: "#06b6d4", // Cyan / Mineral
-    gradient: "linear-gradient(135deg, #06b6d4, #0891b2)",
-    bgSoft: "rgba(6, 182, 212, 0.12)",
-    borderGlow: "rgba(6, 182, 212, 0.35)",
-    quote: "علوم الأرض والبيئة.. مادة الدرجة النهائية والتقفيل بإذن الله!",
-    advice: "راجع القطاعات الجيولوجية ودورة الصخور والباب الرابع كويس."
+    primaryColor: "#f97316",
+    secondaryColor: "#eab308",
+    gradient: "linear-gradient(135deg, #f97316 0%, #c2410c 100%)",
+    glow: "rgba(249, 115, 22, 0.35)",
+    tagline: "تاريخ الأرض.. مادة التقفيل والـ 60 المضمونة بإذن الله!",
+    tip: "القطاعات الجيولوجية والصخور افهمها بالصور"
   }
 ];
 
 export const TASK_TYPES = [
-  { id: "شرح", label: "مذاكرة شرح", color: "#38bdf8" },
-  { id: "حل", label: "حل تدريبات وشيت", color: "#4ade80" },
-  { id: "مراجعة", label: "مراجعة وتثبيت", color: "#facc15" },
-  { id: "تلخيص", label: "تلخيص وخرائط ذهنية", color: "#c084fc" },
-  { id: "امتحان جزئي", label: "امتحان جزئي / كويز", color: "#f87171" }
+  { id: "شرح", label: "مذاكرة شرح 📖", color: "#38bdf8" },
+  { id: "حل", label: "حل تدريبات وشيت ✍️", color: "#4ade80" },
+  { id: "مراجعة", label: "مراجعة وتثبيت 🔄", color: "#facc15" },
+  { id: "تلخيص", label: "تلخيص وخرائط ذهنية 🗺️", color: "#c084fc" },
+  { id: "امتحان جزئي", label: "امتحان جزئي / كويز 🎯", color: "#f87171" }
 ];
 
 export const PRIORITY_LEVELS = [
-  { id: "urgent", label: "طارئ وعاجل 🔴", color: "#ef4444" },
-  { id: "normal", label: "أولوية متوسطة 🟡", color: "#f59e0b" },
-  { id: "low", label: "هادي في وقته 🟢", color: "#10b981" }
+  { id: "urgent", label: "لازم يخلص الأول 🔴", color: "#ef4444" },
+  { id: "normal", label: "أولوية عادية 🟡", color: "#f59e0b" },
+  { id: "low", label: "في وقت الفراغ 🟢", color: "#10b981" }
 ];
 
 export const MOTIVATIONAL_MESSAGES = [

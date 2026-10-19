@@ -8,42 +8,34 @@ import {
   doc, 
   onSnapshot, 
   query, 
-  orderBy, 
   serverTimestamp 
 } from "./firebase";
 import { SUBJECTS } from "./data/subjects";
 import { soundFx } from "./utils/sound";
 
-import Navbar from "./components/Navbar";
-import OverviewStats from "./components/OverviewStats";
-import SubjectSelector from "./components/SubjectSelector";
-import SubjectView from "./components/SubjectView";
+import Header from "./components/Header";
+import SubjectsHub from "./components/SubjectsHub";
+import SubjectWorkspace from "./components/SubjectWorkspace";
 import NotesSection from "./components/NotesSection";
-import PomodoroTimer from "./components/PomodoroTimer";
 import CelebrationModal from "./components/CelebrationModal";
-import FirebaseRulesModal from "./components/FirebaseRulesModal";
 
-import { ListTodo, FileText, Timer, AlertCircle } from "lucide-react";
-
-// بيانات افتراضية أولية لبدء المذاكرة مباشرة
-const INITIAL_SAMPLE_TASKS = [
+// بيانات ابتدائية واقعية لطلاب الثانوية العامة (علمي)
+const INITIAL_TASKS = [
   {
     id: "sample-chem-1",
     subject: "chemistry",
     title: "الباب الأول: العناصر الانتقالية وخواص الحديد",
     type: "شرح",
     priority: "urgent",
-    completed: false,
-    createdAt: null
+    completed: false
   },
   {
     id: "sample-phys-1",
     subject: "physics",
-    title: "الفصل الأول: قانونا كيرشوف وحل المسائل المعقدة",
+    title: "الفصل الأول: قانونا كيرشوف وتوزيع الجهود",
     type: "حل",
     priority: "urgent",
-    completed: false,
-    createdAt: null
+    completed: false
   },
   {
     id: "sample-bio-1",
@@ -51,8 +43,7 @@ const INITIAL_SAMPLE_TASKS = [
     title: "الفصل الأول: الدعامة الفسيولوجية والتركيبية في النبات",
     type: "مراجعة",
     priority: "normal",
-    completed: false,
-    createdAt: null
+    completed: false
   },
   {
     id: "sample-arab-1",
@@ -60,8 +51,7 @@ const INITIAL_SAMPLE_TASKS = [
     title: "الوحدة الأولى نحو: همزة القطع وألف الوصل والمصادر",
     type: "شرح",
     priority: "normal",
-    completed: false,
-    createdAt: null
+    completed: false
   },
   {
     id: "sample-eng-1",
@@ -69,8 +59,7 @@ const INITIAL_SAMPLE_TASKS = [
     title: "Unit 1: Past Simple vs Past Continuous and Vocab",
     type: "حل",
     priority: "normal",
-    completed: false,
-    createdAt: null
+    completed: false
   },
   {
     id: "sample-geo-1",
@@ -78,66 +67,63 @@ const INITIAL_SAMPLE_TASKS = [
     title: "الباب الأول: التراكيب الجيولوجية والفوالق والطيات",
     type: "تلخيص",
     priority: "low",
-    completed: false,
-    createdAt: null
+    completed: false
   }
 ];
 
-const INITIAL_SAMPLE_NOTES = [
+const INITIAL_NOTES = [
   {
     id: "sample-note-1",
     title: "امتحان شامل فيزياء على الفصل الأول",
-    content: "امتحان السنتر القادم، التركيز على توصيل المقاومات وتطبيقات كيرشوف وقانون أوم للدائرة المغلقة.",
+    content: "امتحان السنتر، التركيز على توصيل المقاومات وتطبيقات كيرشوف وقانون أوم.",
     subject: "physics",
-    tag: "امتحان قادم",
-    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] // بعد 5 أيام
+    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
   },
   {
     id: "sample-note-2",
     title: "تنبيه هام من مستر الكيمياء",
     content: "مراجعة ألوان رواسب الباب الثاني وحفظ حالات تأكسد المنجنيز والكروم جيداً.",
     subject: "chemistry",
-    tag: "ملحوظة مدرس",
     date: null
   }
 ];
 
 export default function App() {
   const [tasks, setTasks] = useState(() => {
-    const local = localStorage.getItem("study_local_tasks");
-    return local ? JSON.parse(local) : INITIAL_SAMPLE_TASKS;
+    try {
+      const saved = localStorage.getItem("study_v2_tasks");
+      return saved ? JSON.parse(saved) : INITIAL_TASKS;
+    } catch {
+      return INITIAL_TASKS;
+    }
   });
 
   const [notes, setNotes] = useState(() => {
-    const local = localStorage.getItem("study_local_notes");
-    return local ? JSON.parse(local) : INITIAL_SAMPLE_NOTES;
+    try {
+      const saved = localStorage.getItem("study_v2_notes");
+      return saved ? JSON.parse(saved) : INITIAL_NOTES;
+    } catch {
+      return INITIAL_NOTES;
+    }
   });
 
-  const [selectedSubjectId, setSelectedSubjectId] = useState("chemistry");
-  const [activeTab, setActiveTab] = useState("backlog"); // "backlog" | "notes"
+  const [activeTab, setActiveTab] = useState("subjects"); // "subjects" | "notes"
+  const [currentSubjectId, setCurrentSubjectId] = useState(null); // null = All Subjects Hub
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [theme, setTheme] = useState("dark");
   const [celebrationData, setCelebrationData] = useState(null);
-  const [showRulesModal, setShowRulesModal] = useState(false);
-  const [firestoreError, setFirestoreError] = useState(null);
-  const [showTimerWidget, setShowTimerWidget] = useState(true);
 
-  // حفظ محلي تلقائي
+  // مزامنة التخزين المحلي
   useEffect(() => {
-    localStorage.setItem("study_local_tasks", JSON.stringify(tasks));
+    localStorage.setItem("study_v2_tasks", JSON.stringify(tasks));
   }, [tasks]);
 
   useEffect(() => {
-    localStorage.setItem("study_local_notes", JSON.stringify(notes));
+    localStorage.setItem("study_v2_notes", JSON.stringify(notes));
   }, [notes]);
 
-  // استرجاع الإعدادات المحفوظة محلياً
+  // استرجاع تفضيلات الصوت
   useEffect(() => {
-    const savedTheme = localStorage.getItem("study_theme") || "dark";
     const savedSound = localStorage.getItem("study_sound");
-    setTheme(savedTheme);
-    document.documentElement.setAttribute("data-theme", savedTheme);
-
     if (savedSound !== null) {
       const isSound = savedSound === "true";
       setSoundEnabled(isSound);
@@ -145,7 +131,7 @@ export default function App() {
     }
   }, []);
 
-  // الاستماع اللحظي (Real-time) لجدول المهام في Firestore
+  // الاستماع اللحظي لقاعدة بيانات Firestore (tasks collection)
   useEffect(() => {
     try {
       const q = query(collection(db, "tasks"));
@@ -153,29 +139,25 @@ export default function App() {
         q,
         (snapshot) => {
           if (!snapshot.empty) {
-            const loadedTasks = snapshot.docs.map((docSnap) => ({
+            const remoteTasks = snapshot.docs.map((docSnap) => ({
               id: docSnap.id,
               ...docSnap.data()
             }));
-            setTasks(loadedTasks);
+            setTasks(remoteTasks);
           }
-          setFirestoreError(null);
         },
-        (error) => {
-          console.warn("Firestore tasks error:", error);
-          if (error.code === "permission-denied") {
-            setFirestoreError("تنبيه: قواعد الأمان في Firebase تحتاج تفعيل لتخزين وقراءة البيانات سحابياً (البيانات محفوظة محلياً بنجاح).");
-          }
+        (err) => {
+          // التعامل الصامت مع أخطاء الشبكة أو الصلاحيات دون إزعاج المستخدم
+          console.warn("Firestore tasks listener:", err);
         }
       );
-
       return () => unsubscribe();
     } catch (e) {
-      console.error(e);
+      console.warn("Firestore init error:", e);
     }
   }, []);
 
-  // الاستماع اللحظي (Real-time) للملاحظات في Firestore
+  // الاستماع اللحظي لقاعدة بيانات Firestore (notes collection)
   useEffect(() => {
     try {
       const q = query(collection(db, "notes"));
@@ -183,21 +165,20 @@ export default function App() {
         q,
         (snapshot) => {
           if (!snapshot.empty) {
-            const loadedNotes = snapshot.docs.map((docSnap) => ({
+            const remoteNotes = snapshot.docs.map((docSnap) => ({
               id: docSnap.id,
               ...docSnap.data()
             }));
-            setNotes(loadedNotes);
+            setNotes(remoteNotes);
           }
         },
-        (error) => {
-          console.warn("Firestore notes error:", error);
+        (err) => {
+          console.warn("Firestore notes listener:", err);
         }
       );
-
       return () => unsubscribe();
     } catch (e) {
-      console.error(e);
+      console.warn("Firestore init error:", e);
     }
   }, []);
 
@@ -209,15 +190,7 @@ export default function App() {
     localStorage.setItem("study_sound", String(nextVal));
   };
 
-  // تبديل النمط وحماية العين
-  const handleToggleTheme = () => {
-    const nextTheme = theme === "dark" ? "warm" : "dark";
-    setTheme(nextTheme);
-    document.documentElement.setAttribute("data-theme", nextTheme);
-    localStorage.setItem("study_theme", nextTheme);
-  };
-
-  // إضافة درس متراكم جديد
+  // إضافة درس متراكم
   const handleAddTask = async (taskData) => {
     soundFx.playAdd();
     const tempId = "local-" + Date.now();
@@ -225,14 +198,13 @@ export default function App() {
       id: tempId,
       ...taskData,
       completed: false,
-      createdAt: null,
-      completedAt: null
+      createdAt: new Date().toISOString()
     };
 
-    // حفظ محلي فوري
+    // إضافة محلية فورية للاستجابة السريعة
     setTasks((prev) => [newTask, ...prev]);
 
-    // المزامنة مع فايربيز
+    // المزامنة مع كوليكشن tasks في فايربيز
     try {
       const docRef = await addDoc(collection(db, "tasks"), {
         ...taskData,
@@ -240,31 +212,27 @@ export default function App() {
         createdAt: serverTimestamp(),
         completedAt: null
       });
-      // تحديث المعرف إذا نجح الفايربيز
       setTasks((prev) => prev.map((t) => t.id === tempId ? { ...t, id: docRef.id } : t));
     } catch (err) {
-      console.warn("Firebase sync notice:", err);
-      if (err.code === "permission-denied") {
-        setFirestoreError("تنبيه: قواعد الأمان في Firebase تحتاج تفعيل لتخزين وقراءة البيانات سحابياً (البيانات محفوظة محلياً بنجاح).");
-      }
+      console.warn("Firebase task sync:", err);
     }
   };
 
-  // إنجاز المهمة (علامة الصح + الاحتفال + الإزالة)
+  // إنجاز الدرس (علامة الصح + الاحتفال + إزالة من الجدول)
   const handleCompleteTask = async (task) => {
-    // 1. تشغيل صوت الاحتفال
+    // 1. صوت الاحتفال
     soundFx.playCelebration();
 
-    // 2. إظهار نافذة الاحتفال الفخمة مع الكونفيتي والرسالة الحماسية
+    // 2. نافذة الاحتفال الفخمة مع الكونفيتي والرسالة
     const subjectObj = SUBJECTS.find((s) => s.id === task.subject);
     setCelebrationData({ task, subject: subjectObj });
 
-    // 3. تحديث فوري محلي
+    // 3. التحديث الفوري لإزالة الدرس من الجدول النشط
     setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, completed: true, completedAt: null } : t))
+      prev.map((t) => (t.id === task.id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t))
     );
 
-    // 4. تحديث المهمة في فايربيز
+    // 4. التحديث في فايربيز
     try {
       if (!task.id.startsWith("sample-") && !task.id.startsWith("local-")) {
         const taskRef = doc(db, "tasks", task.id);
@@ -274,11 +242,11 @@ export default function App() {
         });
       }
     } catch (err) {
-      console.warn("Complete task firestore sync notice:", err);
+      console.warn("Firebase task complete sync:", err);
     }
   };
 
-  // التراجع عن الإنجاز
+  // استرجاع درس للجدول
   const handleToggleUndoTask = async (task) => {
     setTasks((prev) =>
       prev.map((t) => (t.id === task.id ? { ...t, completed: false, completedAt: null } : t))
@@ -292,11 +260,11 @@ export default function App() {
         });
       }
     } catch (err) {
-      console.warn(err);
+      console.warn("Firebase task undo sync:", err);
     }
   };
 
-  // حذف مهمة نهائياً
+  // حذف درس
   const handleDeleteTask = async (taskId) => {
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
     try {
@@ -304,18 +272,18 @@ export default function App() {
         await deleteDoc(doc(db, "tasks", taskId));
       }
     } catch (err) {
-      console.warn("Delete task error:", err);
+      console.warn("Firebase task delete sync:", err);
     }
   };
 
-  // إضافة ملاحظة أو موعد امتحان
+  // إضافة ملاحظة
   const handleAddNote = async (noteData) => {
     soundFx.playAdd();
     const tempId = "note-" + Date.now();
     const newNote = {
       id: tempId,
       ...noteData,
-      createdAt: null
+      createdAt: new Date().toISOString()
     };
 
     setNotes((prev) => [newNote, ...prev]);
@@ -327,7 +295,7 @@ export default function App() {
       });
       setNotes((prev) => prev.map((n) => n.id === tempId ? { ...n, id: docRef.id } : n));
     } catch (err) {
-      console.warn("Add note sync notice:", err);
+      console.warn("Firebase note sync:", err);
     }
   };
 
@@ -339,120 +307,68 @@ export default function App() {
         await deleteDoc(doc(db, "notes", noteId));
       }
     } catch (err) {
-      console.warn("Delete note error:", err);
+      console.warn("Firebase note delete sync:", err);
     }
   };
 
-  const currentSubject = SUBJECTS.find((s) => s.id === selectedSubjectId) || SUBJECTS[0];
+  const selectedSubjectObj = SUBJECTS.find((s) => s.id === currentSubjectId);
 
   return (
-    <div className="app-container">
-      {/* الشريط العلوي */}
-      <Navbar
+    <div className="app-wrapper">
+      {/* الشريط العلوي بدون أي أزرار أو تنبيهات تخص الكود أو الفايربيز */}
+      <Header
+        activeTab={activeTab}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          if (tab === "subjects" && currentSubjectId) {
+            // الرجوع لصفحة المواد الرئيسية عند الضغط على التبويب
+            setCurrentSubjectId(null);
+          }
+        }}
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
-        theme={theme}
-        onToggleTheme={handleToggleTheme}
-        onOpenRulesModal={() => setShowRulesModal(true)}
+        notesCount={notes.length}
       />
 
-      {/* تنبيه قواعد فايربيز إن وجدت */}
-      {firestoreError && (
-        <div 
-          className="glass-panel animate-pop" 
-          style={{ 
-            padding: "14px 18px", 
-            marginBottom: "20px", 
-            background: "rgba(239, 68, 68, 0.15)", 
-            borderColor: "rgba(239, 68, 68, 0.3)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "10px"
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#f87171" }}>
-            <AlertCircle size={20} />
-            <span style={{ fontSize: "14px", fontWeight: "600" }}>{firestoreError}</span>
-          </div>
-          <button 
-            onClick={() => setShowRulesModal(true)} 
-            className="btn btn-primary"
-            style={{ fontSize: "12.5px", padding: "6px 14px", background: "#ef4444" }}
-          >
-            تفعيل الـ Rules الآن
-          </button>
-        </div>
-      )}
-
-      {/* بطاقات الإحصائيات الشاملة */}
-      <OverviewStats tasks={tasks} notes={notes} />
-
-      {/* مؤقت بومودورو للتركيز المباشر */}
-      {showTimerWidget && <PomodoroTimer />}
-
-      {/* أزرار التبديل الرئيسية: جدول المتراكم vs الملاحظات والامتحانات */}
-      <div className="main-view-tabs">
-        <button
-          onClick={() => setActiveTab("backlog")}
-          className={`view-tab-btn ${activeTab === "backlog" ? "active" : ""}`}
-        >
-          <ListTodo size={18} />
-          <span>جدول المتراكم حسب المواد</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("notes")}
-          className={`view-tab-btn ${activeTab === "notes" ? "active" : ""}`}
-        >
-          <FileText size={18} />
-          <span>الملاحظات ومواعيد الامتحانات ({notes.length})</span>
-        </button>
-      </div>
-
-      {/* العرض الرئيسي بناءً على التبويب المختار */}
-      {activeTab === "backlog" ? (
-        <>
-          {/* محدد المواد الستة */}
-          <SubjectSelector
-            selectedSubjectId={selectedSubjectId}
-            onSelectSubject={setSelectedSubjectId}
-            tasks={tasks}
+      {/* المحتوى الرئيسي */}
+      <main>
+        {activeTab === "subjects" ? (
+          currentSubjectId && selectedSubjectObj ? (
+            /* صفحة المادة المختارة وجدولها المباشر */
+            <SubjectWorkspace
+              subject={selectedSubjectObj}
+              tasks={tasks}
+              onBackToHub={() => setCurrentSubjectId(null)}
+              onSelectSubject={setCurrentSubjectId}
+              onAddTask={handleAddTask}
+              onCompleteTask={handleCompleteTask}
+              onDeleteTask={handleDeleteTask}
+              onToggleUndoTask={handleToggleUndoTask}
+            />
+          ) : (
+            /* الواجهة الأولى: كل المواد الستة واضحة ومباشرة أمام الطالب */
+            <SubjectsHub
+              tasks={tasks}
+              onSelectSubject={(id) => setCurrentSubjectId(id)}
+            />
+          )
+        ) : (
+          /* خانة الملاحظات ومواعيد الامتحانات */
+          <NotesSection
+            notes={notes}
+            onAddNote={handleAddNote}
+            onDeleteNote={handleDeleteNote}
           />
+        )}
+      </main>
 
-          {/* لوحة وجدول المادة المختارة */}
-          <SubjectView
-            subject={currentSubject}
-            tasks={tasks}
-            onAddTask={handleAddTask}
-            onCompleteTask={handleCompleteTask}
-            onDeleteTask={handleDeleteTask}
-            onToggleUndoTask={handleToggleUndoTask}
-          />
-        </>
-      ) : (
-        /* قسم الملاحظات والامتحانات */
-        <NotesSection
-          notes={notes}
-          onAddNote={handleAddNote}
-          onDeleteNote={handleDeleteNote}
-          activeSubjectId={selectedSubjectId}
-        />
-      )}
-
-      {/* نافذة الاحتفال (عاش مووت فخور بيك كمل متوقفش) */}
+      {/* نافذة الاحتفال المبهجة عند إنجاز المهمة (عاااش مووووت!) */}
       {celebrationData && (
         <CelebrationModal
           task={celebrationData.task}
           subject={celebrationData.subject}
           onClose={() => setCelebrationData(null)}
         />
-      )}
-
-      {/* نافذة إرشادات وقواعد الفايربيز */}
-      {showRulesModal && (
-        <FirebaseRulesModal onClose={() => setShowRulesModal(false)} />
       )}
     </div>
   );

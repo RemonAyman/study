@@ -1,33 +1,24 @@
 import React, { useState } from "react";
 import { SUBJECTS } from "../data/subjects";
-import { Calendar, Plus, Trash2, Pin, Clock, AlertTriangle, FileText, CheckCircle2 } from "lucide-react";
-
-const NOTE_TAGS = [
-  { id: "امتحان قادم", label: "امتحان قادم 🚨", color: "#ef4444", classType: "exam" },
-  { id: "ملاحظة هامة", label: "ملاحظة هامة 📌", color: "#f59e0b", classType: "reminder" },
-  { id: "ملحوظة مدرس", label: "ملحوظة مدرس 💡", color: "#38bdf8", classType: "info" },
-  { id: "واجب وشيت", label: "شيت ومطلوب حله 📝", color: "#10b981", classType: "homework" }
-];
+import { Plus, Trash2, Calendar, FileText, Bell } from "lucide-react";
 
 export default function NotesSection({
   notes,
   onAddNote,
-  onDeleteNote,
-  activeSubjectId
+  onDeleteNote
 }) {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [noteSubject, setNoteSubject] = useState(activeSubjectId || "chemistry");
-  const [tag, setTag] = useState("امتحان قادم");
+  const [noteSubject, setNoteSubject] = useState("chemistry");
   const [date, setDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // تصفية الملاحظات
   const filteredNotes = notes.filter((n) => {
     if (selectedFilter === "all") return true;
-    if (selectedFilter === "exams") return n.tag === "امتحان قادم" || n.tag === "امتحان";
+    if (selectedFilter === "exams") return Boolean(n.date);
     return n.subject === selectedFilter;
   });
 
@@ -41,7 +32,6 @@ export default function NotesSection({
         title: title.trim(),
         content: content.trim(),
         subject: noteSubject,
-        tag: tag,
         date: date || null
       });
       setTitle("");
@@ -54,52 +44,51 @@ export default function NotesSection({
   };
 
   return (
-    <div className="notes-section animate-pop">
-      {/* رأس قسم الملاحظات وأزرار التصفية */}
-      <div className="notes-header-row">
+    <div className="notes-container animate-entrance">
+      {/* رأس قسم الملاحظات */}
+      <div className="notes-header-bar">
         <div>
-          <h2 style={{ fontSize: "22px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
-            <FileText size={22} color="#3b82f6" />
+          <h2 style={{ fontSize: "22px", fontWeight: "800", color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
+            <FileText size={22} color="#38bdf8" />
             الملاحظات ومواعيد الامتحانات
           </h2>
-          <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "2px" }}>
-            سجل مواعيد امتحانات السناتر والشوامل وملاحظات المستر المهمة في مكان واحد
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "2px" }}>
+            سجل مواعيد امتحانات السناتر والشوامل والملاحظات المهمة لكل مادة
           </p>
         </div>
 
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="btn btn-primary"
-          style={{ whiteSpace: "nowrap" }}
+          className="action-btn btn-primary-gradient"
         >
           <Plus size={18} />
-          <span>{showAddForm ? "إلغاء الإضافة" : "إضافة ملاحظة / امتحان جديد"}</span>
+          <span>{showAddForm ? "إلغاء" : "إضافة ملاحظة / امتحان"}</span>
         </button>
       </div>
 
-      {/* نموذج إضافة ملاحظة جديدة */}
+      {/* نموذج إضافة الملاحظة */}
       {showAddForm && (
-        <form onSubmit={handleSubmit} className="glass-panel animate-pop" style={{ padding: "22px", marginBottom: "24px", borderColor: "rgba(59, 130, 246, 0.3)" }}>
-          <h3 style={{ fontSize: "16px", fontWeight: "700", marginBottom: "16px", color: "#60a5fa" }}>
+        <form onSubmit={handleSubmit} className="add-lesson-card glass-box animate-entrance" style={{ borderColor: "rgba(56, 189, 248, 0.3)" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: "800", marginBottom: "14px", color: "#38bdf8" }}>
             ✍️ تفاصيل الملاحظة أو الامتحان القادم
           </h3>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px", marginBottom: "14px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginBottom: "12px" }}>
             <div>
-              <label style={{ display: "block", fontSize: "13px", color: "var(--text-muted)", marginBottom: "6px" }}>
+              <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>
                 العنوان
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="مثال: امتحان شامل فيزياء على الفصل الأول والثاني"
+                placeholder="مثال: امتحان شامل كيمياء على الباب الأول والثاني"
                 required
               />
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "13px", color: "var(--text-muted)", marginBottom: "6px" }}>
+              <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>
                 المادة التابعة لها
               </label>
               <select value={noteSubject} onChange={(e) => setNoteSubject(e.target.value)}>
@@ -112,21 +101,8 @@ export default function NotesSection({
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "13px", color: "var(--text-muted)", marginBottom: "6px" }}>
-                نوع التنبيه
-              </label>
-              <select value={tag} onChange={(e) => setTag(e.target.value)}>
-                {NOTE_TAGS.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "13px", color: "var(--text-muted)", marginBottom: "6px" }}>
-                تاريخ الموعد / الامتحان (اختياري)
+              <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+                تاريخ الامتحان / الموعد (اختياري)
               </label>
               <input
                 type="date"
@@ -136,9 +112,9 @@ export default function NotesSection({
             </div>
           </div>
 
-          <div style={{ marginBottom: "16px" }}>
-            <label style={{ display: "block", fontSize: "13px", color: "var(--text-muted)", marginBottom: "6px" }}>
-              تفاصيل أو ملاحظات إضافية (الصفحات المقررة، تنبيهات المستر...)
+          <div style={{ marginBottom: "14px" }}>
+            <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+              ملاحظات أو تفاصيل إضافية (الصفحات المقررة، تنبيهات المستر)
             </label>
             <textarea
               rows="3"
@@ -148,64 +124,67 @@ export default function NotesSection({
             />
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-            <button type="button" onClick={() => setShowAddForm(false)} className="btn btn-ghost">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+            <button type="button" onClick={() => setShowAddForm(false)} className="action-btn btn-outline">
               إلغاء
             </button>
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              حفظ الملاحظة في Firebase
+            <button type="submit" className="action-btn btn-primary-gradient" disabled={isSubmitting}>
+              حفظ الملاحظة
             </button>
           </div>
         </form>
       )}
 
       {/* شريط الفلاتر */}
-      <div className="notes-filter-pills" style={{ marginBottom: "20px" }}>
+      <div className="notes-filter-strip">
         <button
           onClick={() => setSelectedFilter("all")}
-          className={`filter-pill ${selectedFilter === "all" ? "active" : ""}`}
+          className={`quick-pill ${selectedFilter === "all" ? "active" : ""}`}
+          style={{ "--pill-color": "#0284c7" }}
         >
           كل الملاحظات ({notes.length})
         </button>
 
         <button
           onClick={() => setSelectedFilter("exams")}
-          className={`filter-pill ${selectedFilter === "exams" ? "active" : ""}`}
-          style={{ borderColor: selectedFilter === "exams" ? "#ef4444" : "var(--border-subtle)", background: selectedFilter === "exams" ? "#ef4444" : "" }}
+          className={`quick-pill ${selectedFilter === "exams" ? "active" : ""}`}
+          style={{ "--pill-color": "#ef4444" }}
         >
-          🚨 الامتحانات القادمة
+          <Bell size={13} />
+          <span>الامتحانات القادمة</span>
         </button>
 
         {SUBJECTS.map((s) => (
           <button
             key={s.id}
             onClick={() => setSelectedFilter(s.id)}
-            className={`filter-pill ${selectedFilter === s.id ? "active" : ""}`}
+            className={`quick-pill ${selectedFilter === s.id ? "active" : ""}`}
+            style={{ "--pill-color": s.primaryColor }}
           >
-            {s.symbol} {s.name}
+            <span>{s.symbol}</span>
+            <span>{s.name}</span>
           </button>
         ))}
       </div>
 
-      {/* قائمة كروت الملاحظات */}
+      {/* شبكة كروت الملاحظات */}
       {filteredNotes.length === 0 ? (
-        <div className="glass-panel empty-tasks-state">
-          <div className="empty-state-icon">📝</div>
-          <div className="empty-state-title" style={{ color: "#60a5fa" }}>
+        <div className="clean-slate-box glass-box">
+          <div className="clean-slate-icon">📝</div>
+          <div className="clean-slate-title" style={{ color: "#38bdf8" }}>
             لا توجد ملاحظات مسجلة هنا
           </div>
-          <p className="empty-state-desc">
-            سجل امتحاناتك القادمة وملاحظات المواد عشان تكون دايماً منظم وعارف مواعيدك بدقة!
+          <p className="clean-slate-desc">
+            تقدر تسجل امتحاناتك القادمة وملاحظات المواد المهمة عشان تكون دايماً عارف جدولك ومواعيدك بدقة!
           </p>
         </div>
       ) : (
-        <div className="notes-grid">
+        <div className="notes-grid-cards">
           {filteredNotes.map((note) => {
             const subjectObj = SUBJECTS.find((s) => s.id === note.subject);
-            const tagObj = NOTE_TAGS.find((t) => t.id === note.tag) || NOTE_TAGS[0];
-            
-            // حساب الأيام المتبقية
-            let daysDiffText = null;
+
+            // حساب الأيام المتبقية على الامتحان
+            let daysText = null;
             let isUrgent = false;
 
             if (note.date) {
@@ -215,76 +194,69 @@ export default function NotesSection({
               const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
               if (days < 0) {
-                daysDiffText = "انتهى الموعد ⌛";
+                daysText = "انتهى الموعد ⌛";
               } else if (days === 0) {
-                daysDiffText = "اليوم! 🚨";
+                daysText = "اليوم! 🚨";
                 isUrgent = true;
               } else if (days === 1) {
-                daysDiffText = "غداً بإذن الله! ⚡";
+                daysText = "غداً بإذن الله! ⚡";
                 isUrgent = true;
               } else {
-                daysDiffText = `باقي ${days} أيام ⏳`;
+                daysText = `باقي ${days} أيام ⏳`;
               }
             }
 
             return (
-              <div 
-                key={note.id} 
-                className="note-card glass-panel"
-                style={{ borderRightColor: subjectObj?.themeColor || "#3b82f6" }}
+              <div
+                key={note.id}
+                className="single-note-card glass-box"
+                style={{ borderRightColor: subjectObj?.primaryColor || "#38bdf8" }}
               >
-                <div className="note-top">
-                  <div className="note-header-line">
-                    <span 
-                      className={`note-tag-badge ${tagObj.classType}`}
-                      style={{
-                        background: `${tagObj.color}18`,
-                        color: tagObj.color,
-                        borderColor: `${tagObj.color}35`
-                      }}
-                    >
-                      {note.tag}
-                    </span>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px", color: subjectObj?.primaryColor, fontWeight: "700", fontSize: "13px" }}>
+                      <span>{subjectObj?.symbol}</span>
+                      <span>{subjectObj?.name}</span>
+                    </div>
 
-                    {daysDiffText && (
-                      <span 
+                    {daysText && (
+                      <span
                         style={{
                           fontSize: "12px",
                           fontWeight: "700",
-                          color: isUrgent ? "#ef4444" : "#fbbf24",
-                          background: isUrgent ? "rgba(239, 68, 68, 0.12)" : "rgba(245, 158, 11, 0.12)",
+                          color: isUrgent ? "#f87171" : "#fbbf24",
+                          background: isUrgent ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)",
                           padding: "3px 8px",
                           borderRadius: "6px"
                         }}
                       >
-                        {daysDiffText}
+                        {daysText}
                       </span>
                     )}
                   </div>
 
-                  <h3 className="note-title">{note.title}</h3>
+                  <h3 style={{ fontSize: "16px", fontWeight: "800", color: "#ffffff", marginBottom: "6px" }}>
+                    {note.title}
+                  </h3>
 
                   {note.content && (
-                    <p className="note-content">{note.content}</p>
+                    <p style={{ fontSize: "13.5px", color: "var(--text-secondary)", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>
+                      {note.content}
+                    </p>
                   )}
                 </div>
 
-                <div className="note-footer">
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", color: subjectObj?.themeColor }}>
-                    <span>{subjectObj?.symbol}</span>
-                    <span style={{ fontWeight: "700" }}>{subjectObj?.name}</span>
-                  </div>
-
-                  {note.date && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.05)", marginTop: "12px", fontSize: "12px", color: "var(--text-tertiary)" }}>
+                  {note.date ? (
                     <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                       <Calendar size={13} />
                       <span>{note.date}</span>
                     </div>
-                  )}
+                  ) : <span>ملاحظة عامة</span>}
 
                   <button
                     onClick={() => onDeleteNote(note.id)}
-                    className="action-icon-btn"
+                    className="delete-btn-subtle"
                     title="حذف الملاحظة"
                   >
                     <Trash2 size={15} />

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import confetti from "canvas-confetti";
 import { MOTIVATIONAL_MESSAGES } from "../data/subjects";
-import { Sparkles, Trophy, Flame, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function CelebrationModal({ 
   task, 
@@ -9,12 +9,11 @@ export default function CelebrationModal({
   onClose 
 }) {
   useEffect(() => {
-    // إطلاق مفرقعات الزينة والكونفيتي المبهجة
     try {
-      const count = 200;
+      const count = 180;
       const defaults = {
         origin: { y: 0.7 },
-        zIndex: 1500
+        zIndex: 99999
       };
 
       function fire(particleRatio, opts) {
@@ -35,48 +34,48 @@ export default function CelebrationModal({
     }
   }, []);
 
-  // اختيار رسالة تحفيزية عشوائية
   const randomPhrase = MOTIVATIONAL_MESSAGES[Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)];
 
   return (
-    <div className="celebration-modal-overlay animate-pop" onClick={onClose}>
+    <div className="modal-overlay animate-entrance" onClick={onClose}>
       <div 
-        className="celebration-modal-content" 
+        className="modal-card" 
         onClick={(e) => e.stopPropagation()}
-        style={{ borderColor: subject?.themeColor || "#f59e0b" }}
+        style={{ borderColor: subject?.primaryColor || "#f59e0b" }}
       >
-        <div className="celebration-badge-hero">
+        <div className="modal-fire-circle">
           🔥
         </div>
 
-        <h2 className="celebration-title-text">
+        <h2 className="modal-celebration-title">
           عاااش مووووت! 💪
         </h2>
 
-        <p style={{ fontSize: "18px", fontWeight: "700", color: "#f8fafc", marginBottom: "8px" }}>
+        <p style={{ fontSize: "18px", fontWeight: "800", color: "#ffffff", marginBottom: "8px" }}>
           فخور بيك جداً.. كمل متوقفش! 🏆
         </p>
 
         {task && (
-          <div className="celebration-task-tag">
-            <span>تم التخلص من: {task.title}</span>
+          <div className="modal-task-badge">
+            <span>خلصت: {task.title}</span>
             {subject && <span> ({subject.name})</span>}
           </div>
         )}
 
-        <p className="celebration-phrase-text">
+        <p className="modal-celebration-text">
           {randomPhrase}
         </p>
 
         <button 
           onClick={onClose} 
-          className="btn btn-primary"
+          className="action-btn"
           style={{
             width: "100%",
             padding: "14px",
             fontSize: "16px",
             background: "linear-gradient(135deg, #f59e0b, #d97706)",
-            boxShadow: "0 4px 20px rgba(245, 158, 11, 0.4)",
+            color: "#ffffff",
+            boxShadow: "0 6px 20px rgba(245, 158, 11, 0.4)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

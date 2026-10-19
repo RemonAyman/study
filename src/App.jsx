@@ -12,6 +12,7 @@ import {
 } from "./firebase";
 import { SUBJECTS } from "./data/subjects";
 import { soundFx } from "./utils/sound";
+import { Analytics } from "@vercel/analytics/react";
 
 import Header from "./components/Header";
 import SubjectsHub from "./components/SubjectsHub";
@@ -370,6 +371,9 @@ export default function App() {
           onClose={() => setCelebrationData(null)}
         />
       )}
+      
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 }

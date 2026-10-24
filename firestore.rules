@@ -2,17 +2,22 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. جدول الدروس المتراكمة (tasks collection)
+    // 1. كوليكشن الدروس المتراكمة
     match /tasks/{taskId} {
       allow read, write: if true;
     }
 
-    // 2. جدول الملاحظات ومواعيد الامتحانات (notes collection)
+    // 2. كوليكشن الملاحظات والامتحانات
     match /notes/{noteId} {
       allow read, write: if true;
     }
 
-    // السماح العام لضمان عمل كافة الوظائف والمزامنة السحابية
+    // 3. كوليكشن جدول الحصص المدرسي الأسبوعي
+    match /schedule/{scheduleId} {
+      allow read, write: if true;
+    }
+
+    // السماح العام لضمان المزامنة السحابية اللحظية بدون أي قيود
     match /{document=**} {
       allow read, write: if true;
     }

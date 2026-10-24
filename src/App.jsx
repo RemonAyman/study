@@ -5,23 +5,26 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc, 
+  setDoc,
   doc, 
   onSnapshot, 
   query, 
   serverTimestamp 
 } from "./firebase";
 import { SUBJECTS } from "./data/subjects";
+import { DEFAULT_WEEK_DAYS } from "./data/scheduleData";
 import { soundFx } from "./utils/sound";
 import { applyTheme } from "./utils/theme";
 import "./App.css";
 
 import Header from "./components/Header";
+import WeeklySchedule from "./components/WeeklySchedule";
 import SubjectsHub from "./components/SubjectsHub";
 import SubjectWorkspace from "./components/SubjectWorkspace";
 import NotesSection from "./components/NotesSection";
 import CelebrationModal from "./components/CelebrationModal";
 
-import { BookOpen, FileText } from "lucide-react";
+import { Calendar, BookOpen, FileText } from "lucide-react";
 
 // بيانات ابتدائية واقعية لطلاب الثانوية العامة (علمي)
 const INITIAL_TASKS = [
@@ -111,9 +114,25 @@ export default function App() {
     }
   });
 
-  const [activeTab, setActiveTab] = useState("subjects"); // "subjects" | "notes"
-  const [currentSubjectId, setCurrentSubjectId] = useState(null); // null = All Subjects Hub
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [schedule, setSchedule] = useState(() => {
+    try {
+      const saved = localStorage.getItem("study_v3_schedule");
+      return saved ? JSON.parse(saved) : DEFAULT_WEEK_DAYS;
+    } catch {
+      return DEFAULT_WEEK_DAYS;
+    }
+  });
+
+  const [activeTab, setActiveTab] = useState("schedule"); // "schedule" | "subjects" | "notes"
+  const [currentSubjectId, setCurrentSubjectId] = useState(null); // null = Home / Hub
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    try {
+      const saved = localStorage.getItem("study_sound");
+      return saved !== null ? saved === "true" : true;
+    } catch {
+      return true;
+    }
+  });
   const [currentColor, setCurrentColor] = useState(() => {
     return localStorage.getItem("study_custom_color") || "#ff2a85";
   });
@@ -133,17 +152,16 @@ export default function App() {
     localStorage.setItem("study_v3_notes", JSON.stringify(notes));
   }, [notes]);
 
-  // استرجاع تفضيلات الصوت
   useEffect(() => {
-    const savedSound = localStorage.getItem("study_sound");
-    if (savedSound !== null) {
-      const isSound = savedSound === "true";
-      setSoundEnabled(isSound);
-      soundFx.toggleSound(isSound);
-    }
-  }, []);
+    localStorage.setItem("study_v3_schedule", JSON.stringify(schedule));
+  }, [schedule]);
 
-  // الاستماع اللحظي لقاعدة بيانات Firestore (tasks collection)
+  // تطبيق تفضيلات الصوت الأولية
+  useEffect(() => {
+    soundFx.toggleSound(soundEnabled);
+  }, [soundEnabled]);
+
+  // 1. الاستماع اللحظي لقاعدة بيانات Firestore (tasks collection)
   useEffect(() => {
     try {
       const q = query(collection(db, "tasks"));
@@ -168,7 +186,7 @@ export default function App() {
     }
   }, []);
 
-  // الاستماع اللحظي لقاعدة بيانات Firestore (notes collection)
+  // 2. الاستماع اللحظي لقاعدة بيانات Firestore (notes collection)
   useEffect(() => {
     try {
       const q = query(collection(db, "notes"));
@@ -190,6 +208,29 @@ export default function App() {
       return () => unsubscribe();
     } catch (e) {
       console.warn("Firestore init error:", e);
+    }
+  }, []);
+
+  // 3. الاستماع اللحظي لقاعدة بيانات Firestore (schedule collection)
+  useEffect(() => {
+    try {
+      const unsubscribe = onSnapshot(
+        doc(db, "schedule", "weekly_timetable"),
+        (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data && Array.isArray(data.days) && data.days.length > 0) {
+              setSchedule(data.days);
+            }
+          }
+        },
+        (err) => {
+          console.warn("Firestore schedule listener:", err);
+        }
+      );
+      return () => unsubscribe();
+    } catch (e) {
+      console.warn("Firestore schedule init error:", e);
     }
   }, []);
 
@@ -227,7 +268,7 @@ export default function App() {
         createdAt: serverTimestamp(),
         completedAt: null
       });
-      setTasks((prev) => prev.map((t) => t.id === tempId ? { ...t, id: docRef.id } : t));
+      setTasks((prev) => prev.map((t) => (t.id === tempId ? { ...t, id: docRef.id } : t)));
     } catch (err) {
       console.warn("Firebase task sync:", err);
     }
@@ -304,7 +345,7 @@ export default function App() {
         ...noteData,
         createdAt: serverTimestamp()
       });
-      setNotes((prev) => prev.map((n) => n.id === tempId ? { ...n, id: docRef.id } : n));
+      setNotes((prev) => prev.map((n) => (n.id === tempId ? { ...n, id: docRef.id } : n)));
     } catch (err) {
       console.warn("Firebase note sync:", err);
     }
@@ -322,7 +363,29 @@ export default function App() {
     }
   };
 
+  // تحديث جدول الحصص ومزامنته في فايربيز
+  const handleUpdateSchedule = async (newSchedule) => {
+    soundFx.playAdd();
+    setSchedule(newSchedule);
+    try {
+      await setDoc(doc(db, "schedule", "weekly_timetable"), {
+        days: newSchedule,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.warn("Firebase schedule update sync:", err);
+    }
+  };
+
+  // استرجاع جدول الحصص الافتراضي المطابق لكشكول الطالب
+  const handleResetSchedule = async () => {
+    if (window.confirm("هل تريد استرجاع جدول الحصص الافتراضي المطابق لكشكول الملاحظات؟")) {
+      await handleUpdateSchedule(DEFAULT_WEEK_DAYS);
+    }
+  };
+
   const selectedSubjectObj = SUBJECTS.find((s) => s.id === currentSubjectId);
+  const pendingTasksCount = tasks.filter((t) => !t.completed).length;
 
   return (
     <div className="app-container">
@@ -338,17 +401,31 @@ export default function App() {
       <div className="sub-nav-tabs">
         <button
           onClick={() => {
-            setActiveTab("subjects");
-            if (currentSubjectId) setCurrentSubjectId(null);
+            setActiveTab("schedule");
+            setCurrentSubjectId(null);
           }}
-          className={`nav-tab-pill ${activeTab === "subjects" ? "active" : ""}`}
+          className={`nav-tab-pill ${activeTab === "schedule" && !currentSubjectId ? "active" : ""}`}
         >
-          <BookOpen size={17} />
-          <span>المواد والجدول المتراكم</span>
+          <Calendar size={17} />
+          <span>جدول الحصص المدرسي</span>
         </button>
 
         <button
-          onClick={() => setActiveTab("notes")}
+          onClick={() => {
+            setActiveTab("subjects");
+            setCurrentSubjectId(null);
+          }}
+          className={`nav-tab-pill ${activeTab === "subjects" && !currentSubjectId ? "active" : ""}`}
+        >
+          <BookOpen size={17} />
+          <span>المواد والمتراكم ({pendingTasksCount})</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("notes");
+            setCurrentSubjectId(null);
+          }}
           className={`nav-tab-pill ${activeTab === "notes" ? "active" : ""}`}
         >
           <FileText size={17} />
@@ -358,26 +435,40 @@ export default function App() {
 
       {/* 3. المحتوى الرئيسي */}
       <main>
-        {activeTab === "subjects" ? (
-          currentSubjectId && selectedSubjectObj ? (
-            /* صفحة المادة المختارة وجدولها المباشر */
-            <SubjectWorkspace
-              subject={selectedSubjectObj}
-              tasks={tasks}
-              onBackToHub={() => setCurrentSubjectId(null)}
-              onSelectSubject={setCurrentSubjectId}
-              onAddTask={handleAddTask}
-              onCompleteTask={handleCompleteTask}
-              onDeleteTask={handleDeleteTask}
-              onToggleUndoTask={handleToggleUndoTask}
-            />
-          ) : (
-            /* الواجهة الرئيسية: المواد الستة واضحة ومباشرة أمام الطالب */
-            <SubjectsHub
-              tasks={tasks}
-              onSelectSubject={(id) => setCurrentSubjectId(id)}
-            />
-          )
+        {currentSubjectId && selectedSubjectObj ? (
+          /* صفحة المادة المختارة وجدولها المباشر لمتابعة المتراكم وإضافته */
+          <SubjectWorkspace
+            subject={selectedSubjectObj}
+            tasks={tasks}
+            onBackToHub={() => {
+              setCurrentSubjectId(null);
+              setActiveTab("subjects");
+            }}
+            onBackToSchedule={() => {
+              setCurrentSubjectId(null);
+              setActiveTab("schedule");
+            }}
+            onSelectSubject={setCurrentSubjectId}
+            onAddTask={handleAddTask}
+            onCompleteTask={handleCompleteTask}
+            onDeleteTask={handleDeleteTask}
+            onToggleUndoTask={handleToggleUndoTask}
+          />
+        ) : activeTab === "schedule" ? (
+          /* جدول الحصص المدرسي الأسبوعي (الحصص من فوق والأيام على اليمين) */
+          <WeeklySchedule
+            schedule={schedule}
+            tasks={tasks}
+            onSelectSubject={(id) => setCurrentSubjectId(id)}
+            onUpdateSchedule={handleUpdateSchedule}
+            onResetSchedule={handleResetSchedule}
+          />
+        ) : activeTab === "subjects" ? (
+          /* الواجهة العامة: كروت المواد الستة */
+          <SubjectsHub
+            tasks={tasks}
+            onSelectSubject={(id) => setCurrentSubjectId(id)}
+          />
         ) : (
           /* خانة الملاحظات ومواعيد الامتحانات */
           <NotesSection

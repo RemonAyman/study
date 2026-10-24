@@ -1,12 +1,22 @@
 import React, { useState } from "react";
 import { SUBJECTS, TASK_TYPES, PRIORITY_LEVELS } from "../data/subjects";
 import SubjectIcon from "./SubjectIcon";
-import { ArrowRight, Plus, Check, Trash2, Eye, EyeOff, BookOpen, Trophy } from "lucide-react";
+import { 
+  Plus, 
+  Check, 
+  Trash2, 
+  Eye, 
+  EyeOff, 
+  BookOpen, 
+  Trophy,
+  Calendar
+} from "lucide-react";
 
 export default function SubjectWorkspace({
   subject,
   tasks,
   onBackToHub,
+  onBackToSchedule,
   onSelectSubject,
   onAddTask,
   onCompleteTask,
@@ -46,10 +56,23 @@ export default function SubjectWorkspace({
     <div className="subject-workspace-view">
       {/* شريط العودة والتنقل السريع */}
       <div className="workspace-top-bar">
-        <button onClick={onBackToHub} className="btn-soft">
-          <ArrowRight size={17} />
-          <span>العودة للمواد كلها</span>
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          {onBackToSchedule && (
+            <button 
+              onClick={onBackToSchedule} 
+              className="btn-glow" 
+              style={{ padding: "8px 18px", fontSize: "13.5px", gap: "7px" }}
+            >
+              <Calendar size={16} />
+              <span>العودة لجدول الحصص المدرسي</span>
+            </button>
+          )}
+
+          <button onClick={onBackToHub} className="btn-soft" style={{ padding: "8px 16px", fontSize: "13.5px" }}>
+            <BookOpen size={16} />
+            <span>عرض كل المواد</span>
+          </button>
+        </div>
 
         {/* أزرار التبديل السريع بين المواد الستة */}
         <div className="subject-switcher-row">

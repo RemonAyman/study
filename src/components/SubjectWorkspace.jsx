@@ -195,32 +195,95 @@ export default function SubjectWorkspace({
             </p>
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table className="luxury-study-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "50px" }}>#</th>
-                  <th>الدرس / الجزء المتراكم</th>
-                  <th style={{ width: "170px" }}>نوع المذاكرة</th>
-                  <th style={{ width: "160px" }}>الأولوية</th>
-                  <th style={{ width: "110px", textAlign: "center" }}>إنجاز المهمة</th>
-                  <th style={{ width: "65px", textAlign: "center" }}>حذف</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activeTasks.map((task, idx) => {
-                  const typeObj = TASK_TYPES.find((t) => t.id === task.type) || TASK_TYPES[0];
-                  const priorityObj = PRIORITY_LEVELS.find((p) => p.id === task.priority) || PRIORITY_LEVELS[1];
+          <>
+            {/* عرض الجدول المكتبي (Desktop Table View) */}
+            <div className="desktop-table-view" style={{ overflowX: "auto" }}>
+              <table className="luxury-study-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: "50px" }}>#</th>
+                    <th>الدرس / الجزء المتراكم</th>
+                    <th style={{ width: "170px" }}>نوع المذاكرة</th>
+                    <th style={{ width: "160px" }}>الأولوية</th>
+                    <th style={{ width: "110px", textAlign: "center" }}>إنجاز المهمة</th>
+                    <th style={{ width: "65px", textAlign: "center" }}>حذف</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeTasks.map((task, idx) => {
+                    const typeObj = TASK_TYPES.find((t) => t.id === task.type) || TASK_TYPES[0];
+                    const priorityObj = PRIORITY_LEVELS.find((p) => p.id === task.priority) || PRIORITY_LEVELS[1];
 
-                  return (
-                    <tr key={task.id} className="row-hover-glow">
-                      <td style={{ fontWeight: "800", color: "var(--text-muted)" }}>
-                        {idx + 1}
-                      </td>
-                      <td className="task-title-text">
-                        {task.title}
-                      </td>
-                      <td>
+                    return (
+                      <tr key={task.id} className="row-hover-glow">
+                        <td style={{ fontWeight: "800", color: "var(--text-muted)" }}>
+                          {idx + 1}
+                        </td>
+                        <td className="task-title-text">
+                          {task.title}
+                        </td>
+                        <td>
+                          <span 
+                            className="task-tag-badge"
+                            style={{
+                              background: `${typeObj.color}20`,
+                              color: typeObj.color,
+                              border: `1px solid ${typeObj.color}40`
+                            }}
+                          >
+                            {typeObj.label}
+                          </span>
+                        </td>
+                        <td>
+                          <span 
+                            className="task-tag-badge"
+                            style={{
+                              background: `${priorityObj.color}20`,
+                              color: priorityObj.color,
+                              border: `1px solid ${priorityObj.color}40`
+                            }}
+                          >
+                            {priorityObj.label}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          <button
+                            type="button"
+                            onClick={() => onCompleteTask(task)}
+                            className="complete-checkmark-btn"
+                            title="اضغط هنا لإتمام المهمة وإزالتها من الجدول والاحتفال!"
+                          >
+                            <Check size={22} strokeWidth={3} />
+                          </button>
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          <button
+                            type="button"
+                            onClick={() => onDeleteTask(task.id)}
+                            className="delete-action-btn"
+                            title="حذف المهمة"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* عرض بطاقات الموبايل الفاخرة (Mobile Task Cards) */}
+            <div className="mobile-task-cards-list">
+              {activeTasks.map((task, idx) => {
+                const typeObj = TASK_TYPES.find((t) => t.id === task.type) || TASK_TYPES[0];
+                const priorityObj = PRIORITY_LEVELS.find((p) => p.id === task.priority) || PRIORITY_LEVELS[1];
+
+                return (
+                  <div key={task.id} className="mobile-task-card luxury-glass">
+                    <div className="mobile-task-card-header">
+                      <span className="mobile-task-num">#{idx + 1}</span>
+                      <div className="mobile-task-badges">
                         <span 
                           className="task-tag-badge"
                           style={{
@@ -231,8 +294,6 @@ export default function SubjectWorkspace({
                         >
                           {typeObj.label}
                         </span>
-                      </td>
-                      <td>
                         <span 
                           className="task-tag-badge"
                           style={{
@@ -243,33 +304,38 @@ export default function SubjectWorkspace({
                         >
                           {priorityObj.label}
                         </span>
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        <button
-                          type="button"
-                          onClick={() => onCompleteTask(task)}
-                          className="complete-checkmark-btn"
-                          title="اضغط هنا لإتمام المهمة وإزالتها من الجدول والاحتفال!"
-                        >
-                          <Check size={22} strokeWidth={3} />
-                        </button>
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        <button
-                          type="button"
-                          onClick={() => onDeleteTask(task.id)}
-                          className="delete-action-btn"
-                          title="حذف المهمة"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </div>
+
+                    <div className="mobile-task-title">
+                      {task.title}
+                    </div>
+
+                    <div className="mobile-task-actions-row">
+                      <button
+                        type="button"
+                        onClick={() => onCompleteTask(task)}
+                        className="mobile-complete-btn"
+                        title="إنجاز المهمة والاحتفال"
+                      >
+                        <Check size={18} strokeWidth={3} />
+                        <span>إنجاز وعاااش! 🎉</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onDeleteTask(task.id)}
+                        className="delete-action-btn"
+                        title="حذف المهمة"
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 

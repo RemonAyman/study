@@ -1216,3 +1216,380 @@
   gap: 12px;
   margin-top: 10px;
 }
+
+/* 9. تحسينات التجاوب الشاملة لكل الشاشات (Full Responsive Perfection) */
+
+/* تثبيت عمود اليوم في اليمين أثناء التمرير الأفقي في الجدول الشبكي */
+.school-timetable-grid .th-day-col,
+.school-timetable-grid .td-day-col {
+  position: sticky;
+  right: 0;
+  z-index: 5;
+  background: #180616;
+  box-shadow: -5px 0 12px rgba(0, 0, 0, 0.6);
+}
+
+/* تلميح التمرير الأفقي للموبايل */
+.mobile-scroll-hint {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--border-glow);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* شريط الأيام السريع على الموبايل للتنقل بلمسة واحدة */
+.mobile-days-quick-bar {
+  display: none;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 14px 2px;
+  margin-bottom: 14px;
+  scrollbar-width: none;
+}
+
+.mobile-days-quick-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.day-quick-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 12.5px;
+  font-weight: 800;
+  background: rgba(26, 8, 22, 0.7);
+  border: 1px solid var(--border-glow);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.day-quick-pill.active {
+  background: var(--theme-accent);
+  color: #ffffff;
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 14px var(--theme-accent-glow);
+}
+
+.pill-dot-today {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+
+/* نمط بطاقات الأيام المكدسة (Cards View للموبايل والتابلت) */
+.schedule-cards-vertical-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.day-stacked-card {
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glow);
+  transition: all 0.25s;
+}
+
+.day-stacked-card.is-current-day-card {
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 25px var(--theme-accent-glow);
+}
+
+.day-stacked-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.day-stacked-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.day-stacked-name {
+  font-size: 20px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.day-slots-counter {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.day-stacked-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.day-stacked-slot-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.day-stacked-period-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  padding-right: 4px;
+}
+
+/* بطاقات المهام المتراكمة المخصصة للشاشات الصغيرة */
+.desktop-table-view {
+  display: block;
+}
+
+.mobile-task-cards-list {
+  display: none;
+}
+
+.mobile-task-card {
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glow);
+  background: rgba(26, 8, 22, 0.9);
+}
+
+.mobile-task-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.mobile-task-num {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.mobile-task-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mobile-task-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.mobile-task-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mobile-complete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
+  background: rgba(16, 185, 129, 0.2);
+  border: 1.5px solid rgba(16, 185, 129, 0.5);
+  color: #34d399;
+  font-weight: 800;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-complete-btn:active {
+  background: #10b981;
+  color: #ffffff;
+  transform: scale(0.96);
+}
+
+/* قواعد الميديا كويري الشاملة لجميع مقاسات الشاشات */
+@media (max-width: 860px) {
+  .mobile-scroll-hint {
+    display: flex;
+  }
+  .mobile-days-quick-bar {
+    display: flex;
+  }
+  .day-stacked-slots-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .desktop-table-view {
+    display: none;
+  }
+  .mobile-task-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* تكييف شريط الرأس */
+  .top-header-bar {
+    padding: 14px 16px;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 14px;
+    border-radius: var(--radius-lg);
+  }
+
+  .header-left-tools {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .theme-palette-strip {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 4px 8px;
+    gap: 7px;
+  }
+
+  .brand-pill-title {
+    font-size: 15.5px;
+  }
+
+  /* تكييف التبويبات الثلاثة */
+  .sub-nav-tabs {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .nav-tab-pill {
+    flex: 1 1 0;
+    padding: 10px 6px;
+    font-size: 12px;
+    justify-content: center;
+    text-align: center;
+    gap: 5px;
+  }
+
+  .nav-tab-pill span {
+    white-space: nowrap;
+  }
+
+  /* تكييف بطاقة رأس الجدول الأسبوعي */
+  .schedule-header-card {
+    padding: 18px 16px;
+    border-right-width: 4px;
+  }
+
+  .schedule-header-title-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .schedule-main-heading {
+    font-size: 20px;
+  }
+
+  .schedule-actions-row {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* تكييف شريط العودة في مساحة المادة */
+  .workspace-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .workspace-hero-banner {
+    padding: 18px 16px;
+  }
+
+  .workspace-hero-title {
+    font-size: 20px;
+  }
+
+  .workspace-hero-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+  }
+
+  /* النوافذ المنبثقة (Modals) */
+  .modal-dialog-luxury {
+    max-width: 95vw;
+    padding: 20px 16px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .celebrate-popup-box {
+    max-width: 92vw;
+    padding: 26px 18px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .celebrate-fire-badge {
+    width: 68px;
+    height: 68px;
+    font-size: 34px;
+    margin-bottom: 14px;
+  }
+
+  .celebrate-title {
+    font-size: 22px;
+  }
+
+  .celebrate-subtext {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .nav-tab-pill {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+  .nav-tab-pill svg {
+    width: 14px;
+    height: 14px;
+  }
+  .brand-icon-tag {
+    font-size: 11px;
+    padding: 2px 7px;
+  }
+}
+

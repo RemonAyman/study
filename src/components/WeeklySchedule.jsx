@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { SUBJECTS } from "../data/subjects";
 import { PERIOD_HEADERS } from "../data/scheduleData";
 import SubjectIcon from "./SubjectIcon";
@@ -15,7 +15,10 @@ import {
   Edit3,
   RotateCcw,
   Check,
-  X
+  X,
+  LayoutGrid,
+  Layers,
+  ChevronLeft
 } from "lucide-react";
 
 export default function WeeklySchedule({
@@ -25,7 +28,15 @@ export default function WeeklySchedule({
   onUpdateSchedule,
   onResetSchedule
 }) {
-  const [viewMode, setViewMode] = useState("all"); // "all" | "today"
+  const [viewMode, setViewMode] = useState("all"); // "all" | "today" | or dayId
+  const [layoutMode, setLayoutMode] = useState(() => {
+    // كشف تلقائي: لو الشاشة صغيرة يفضل عرض البطاقات
+    if (typeof window !== "undefined" && window.innerWidth <= 768) {
+      return "cards";
+    }
+    return "grid";
+  }); // "grid" | "cards"
+
   const [editingSlot, setEditingSlot] = useState(null); // { dayId, slotId, ... }
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -78,7 +89,222 @@ export default function WeeklySchedule({
   // تصفية الأيام المعروضة
   const displayedDays = viewMode === "today"
     ? schedule.filter((d) => d.dayIndex === currentDayOfWeek)
+    : viewMode !== "all"
+    ? schedule.filter((d) => d.id === viewMode)
     : schedule;
+
+  // دالة مشتركة لتصيير بطاقة الحصة (في كلا نمطي الشبكي والبطاقات)
+  const renderSlotCard = (day, slot) => {
+    // 1. مادة دراسية
+    if (slot.type === "subject") {
+      const subjectObj = SUBJECTS.find((s) => s.id === slot.subjectId) || {
+        id: slot.subjectId,
+        name: slot.subjectId,
+        iconName: "BookOpen",
+        tagline: ""
+      };
+
+      const pendingCount = tasks.filter(
+        (t) => t.subject === slot.subjectId && !t.completed
+      ).length;
+
+      return (
+        <div
+          onClick={() => {
+            if (!isEditMode) {
+              onSelectSubject(slot.subjectId);
+            }
+          }}
+          className={`subject-slot-card luxury-glass ${
+            isEditMode ? "in-edit-mode" : "clickable"
+          }`}
+          title={
+            isEditMode
+              ? "اضغط لتعديل هذه الحصة"
+              : `اضغط للدخول لمتراكم مادة ${subjectObj.name} وتعديله أو إنهائه`
+          }
+        >
+          {/* شريط رأس الحصة */}
+          <div className="slot-card-top-row">
+            <div className="slot-subject-badge">
+              <div className="slot-icon-avatar">
+                <SubjectIcon name={subjectObj.iconName} size={18} />
+              </div>
+              <span className="slot-subject-title">
+                {subjectObj.name}
+              </span>
+            </div>
+
+            {/* بادج المتراكم اللحظي لهذه المادة */}
+            {pendingCount > 0 ? (
+              <span className="slot-backlog-badge alert">
+                <Flame size={12} />
+                <span>{pendingCount} متراكم</span>
+              </span>
+            ) : (
+              <span className="slot-backlog-badge clean">
+                <Check size={12} strokeWidth={3} />
+                <span>مفيش متراكم</span>
+              </span>
+            )}
+          </div>
+
+          {/* عنوان النشاط أو الملاحظة */}
+          <div className="slot-activity-title">
+            {slot.title || `مذاكرة ${subjectObj.name}`}
+          </div>
+
+          {slot.note && (
+            <div className="slot-activity-note">
+              {slot.note}
+            </div>
+          )}
+
+          {/* دعوة للإجراء (CTA) */}
+          <div className="slot-card-footer-cta">
+            <span className="slot-click-hint">
+              {isEditMode ? "اضغط للتعديل" : "افتح المتراكم الآن"}
+            </span>
+            {isEditMode ? (
+              <Edit3 size={14} color="var(--theme-accent)" />
+            ) : (
+              <ArrowLeft size={14} />
+            )}
+          </div>
+
+          {/* زر تعديل سريع عند تفعيل وضع التعديل */}
+          {isEditMode && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenEditSlot(day, slot);
+              }}
+              className="slot-quick-edit-btn"
+              title="تعديل تفاصيل الحصة"
+            >
+              <Edit3 size={14} />
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    // 2. فترة مقفولة (دروس / سنتر خارج البيت)
+    if (slot.type === "locked") {
+      return (
+        <div
+          onClick={() => {
+            if (isEditMode) handleOpenEditSlot(day, slot);
+          }}
+          className={`locked-slot-card ${isEditMode ? "in-edit-mode" : ""}`}
+        >
+          <div className="locked-slot-header">
+            <Lock size={16} color="#fbbf24" />
+            <span className="locked-slot-badge">وقت محجوز بالسنتر</span>
+          </div>
+          <div className="locked-slot-title">
+            {slot.title}
+          </div>
+          {slot.note && (
+            <div className="locked-slot-note">
+              {slot.note}
+            </div>
+          )}
+
+          {isEditMode && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenEditSlot(day, slot);
+              }}
+              className="slot-quick-edit-btn"
+              title="تعديل تفاصيل الحصة"
+            >
+              <Edit3 size={14} />
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    // 3. فترة مخصصة لتصفية البواقي والمتراكم
+    if (slot.type === "backlog") {
+      return (
+        <div
+          onClick={() => {
+            if (isEditMode) handleOpenEditSlot(day, slot);
+          }}
+          className={`backlog-slot-card ${isEditMode ? "in-edit-mode" : ""}`}
+        >
+          <div className="backlog-slot-header">
+            <Flame size={16} color="#f97316" />
+            <span className="backlog-slot-badge">تصفية المتراكم ⚡</span>
+          </div>
+          <div className="backlog-slot-title">
+            {slot.title}
+          </div>
+          <div className="backlog-slot-note">
+            {totalPendingTasks > 0
+              ? `لديك ${totalPendingTasks} دروس متراكمة تنتظر التصفية!`
+              : "لا يوجد أي متراكم حالياً، استمر بالتميز!"}
+          </div>
+
+          {isEditMode && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenEditSlot(day, slot);
+              }}
+              className="slot-quick-edit-btn"
+              title="تعديل تفاصيل الحصة"
+            >
+              <Edit3 size={14} />
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    // 4. وقت حر أو استراحة (free)
+    return (
+      <div
+        onClick={() => {
+          if (isEditMode) handleOpenEditSlot(day, slot);
+        }}
+        className={`free-slot-card ${isEditMode ? "in-edit-mode" : ""}`}
+      >
+        <div className="free-slot-header">
+          <Coffee size={16} color="#34d399" />
+          <span className="free-slot-badge">استراحة وشحن</span>
+        </div>
+        <div className="free-slot-title">
+          {slot.title}
+        </div>
+        {slot.note && (
+          <div className="free-slot-note">
+            {slot.note}
+          </div>
+        )}
+
+        {isEditMode && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenEditSlot(day, slot);
+            }}
+            className="slot-quick-edit-btn"
+            title="تعديل تفاصيل الحصة"
+          >
+            <Edit3 size={14} />
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="weekly-schedule-view">
@@ -112,7 +338,29 @@ export default function WeeklySchedule({
             <span>إجمالي المتراكم: <strong>{totalPendingTasks} دروس</strong></span>
           </div>
 
-          {/* تبديل العرض بين الأسبوع كامل واليوم الحالي */}
+          {/* تبديل نمط العرض: شبكي أو بطاقات */}
+          <div className="view-toggle-pills">
+            <button
+              type="button"
+              onClick={() => setLayoutMode("grid")}
+              className={`view-toggle-btn ${layoutMode === "grid" ? "active" : ""}`}
+              title="عرض الجدول المدرسي الشبكي"
+            >
+              <LayoutGrid size={13} style={{ display: "inline", verticalAlign: "middle", marginLeft: "4px" }} />
+              <span>جدول شبكي</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLayoutMode("cards")}
+              className={`view-toggle-btn ${layoutMode === "cards" ? "active" : ""}`}
+              title="عرض بطاقات لكل يوم (مثالي للموبايل)"
+            >
+              <Layers size={13} style={{ display: "inline", verticalAlign: "middle", marginLeft: "4px" }} />
+              <span>بطاقات الأيام</span>
+            </button>
+          </div>
+
+          {/* تبديل التصفية: الأسبوع كاملاً أو اليوم فقط */}
           <div className="view-toggle-pills">
             <button
               type="button"
@@ -155,301 +403,168 @@ export default function WeeklySchedule({
         </div>
       </div>
 
-      {/* 2. جدول الحصص الأسبوعي الفاخر (School Timetable Table) */}
-      <div className="schedule-table-container luxury-glass">
-        <div className="schedule-table-scroll-wrapper">
-          <table className="school-timetable-grid">
-            {/* صف العناوين: الحصص من فوق */}
-            <thead>
-              <tr>
-                <th className="th-day-col">
-                  <div className="th-content-box">
-                    <Calendar size={17} />
-                    <span>اليوم / الحصص</span>
-                  </div>
-                </th>
+      {/* شريط الأيام السريع على الموبايل للتنقل بين الأيام بلمسة واحدة */}
+      <div className="mobile-days-quick-bar">
+        <button
+          type="button"
+          onClick={() => setViewMode("all")}
+          className={`day-quick-pill ${viewMode === "all" ? "active" : ""}`}
+        >
+          كل الأسبوع
+        </button>
+        {schedule.map((d) => {
+          const isToday = d.dayIndex === currentDayOfWeek;
+          return (
+            <button
+              key={d.id}
+              type="button"
+              onClick={() => setViewMode(d.id)}
+              className={`day-quick-pill ${viewMode === d.id ? "active" : ""}`}
+            >
+              <span>{d.name}</span>
+              {isToday && <span className="pill-dot-today" />}
+            </button>
+          );
+        })}
+      </div>
 
-                {PERIOD_HEADERS.map((period) => {
-                  const IconComponent =
-                    period.icon === "Sun" ? Sun : period.icon === "Moon" ? Moon : Clock;
+      {/* 2. جدول الحصص الأسبوعي الفاخر */}
+      {layoutMode === "grid" ? (
+        <div className="schedule-table-container luxury-glass">
+          {/* تنبيه التمرير للموبايل */}
+          <div className="mobile-scroll-hint">
+            <ChevronLeft size={16} />
+            <span>اسحب أفقياً لتصفح جميع الحصص أو بدّل لـ «بطاقات الأيام» من الأعلى</span>
+          </div>
+
+          <div className="schedule-table-scroll-wrapper">
+            <table className="school-timetable-grid">
+              {/* صف العناوين: الحصص من فوق */}
+              <thead>
+                <tr>
+                  <th className="th-day-col">
+                    <div className="th-content-box">
+                      <Calendar size={17} />
+                      <span>اليوم / الحصص</span>
+                    </div>
+                  </th>
+
+                  {PERIOD_HEADERS.map((period) => {
+                    const IconComponent =
+                      period.icon === "Sun" ? Sun : period.icon === "Moon" ? Moon : Clock;
+                    return (
+                      <th key={period.id} className="th-period-col">
+                        <div className="period-header-wrapper">
+                          <div className="period-header-icon-box">
+                            <IconComponent size={18} color="var(--theme-accent)" />
+                          </div>
+                          <div>
+                            <div className="period-header-title">
+                              {period.title}
+                            </div>
+                            <div className="period-header-time">
+                              {period.time}
+                            </div>
+                          </div>
+                        </div>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+
+              {/* صفوف الأيام: الأيام من على اليمين */}
+              <tbody>
+                {displayedDays.map((day) => {
+                  const isToday = day.dayIndex === currentDayOfWeek;
+
                   return (
-                    <th key={period.id} className="th-period-col">
-                      <div className="period-header-wrapper">
-                        <div className="period-header-icon-box">
-                          <IconComponent size={18} color="var(--theme-accent)" />
-                        </div>
-                        <div>
-                          <div className="period-header-title">
-                            {period.title}
+                    <tr
+                      key={day.id}
+                      className={`timetable-day-row ${isToday ? "is-current-day-row" : ""}`}
+                    >
+                      {/* عمود اليوم في اليمين (مثبت مع التمرير الأفقي) */}
+                      <td className="td-day-col">
+                        <div className="day-name-wrapper">
+                          <div className="day-name-primary">
+                            {day.name}
                           </div>
-                          <div className="period-header-time">
-                            {period.time}
-                          </div>
+                          {isToday && (
+                            <span className="today-glowing-indicator">
+                              <span className="today-pulse-dot" />
+                              <span>اليوم 🌟</span>
+                            </span>
+                          )}
+                          <span className="day-sub-badge">
+                            {day.badge}
+                          </span>
                         </div>
-                      </div>
-                    </th>
+                      </td>
+
+                      {/* خانات الحصص الثلاث لكل يوم */}
+                      {day.slots.map((slot) => (
+                        <td key={slot.id} className="td-period-cell">
+                          {renderSlotCard(day, slot)}
+                        </td>
+                      ))}
+                    </tr>
                   );
                 })}
-              </tr>
-            </thead>
-
-            {/* صفوف الأيام: الأيام من على اليمين */}
-            <tbody>
-              {displayedDays.map((day) => {
-                const isToday = day.dayIndex === currentDayOfWeek;
-
-                return (
-                  <tr
-                    key={day.id}
-                    className={`timetable-day-row ${isToday ? "is-current-day-row" : ""}`}
-                  >
-                    {/* عمود اليوم في اليمين */}
-                    <td className="td-day-col">
-                      <div className="day-name-wrapper">
-                        <div className="day-name-primary">
-                          {day.name}
-                        </div>
-                        {isToday && (
-                          <span className="today-glowing-indicator">
-                            <span className="today-pulse-dot" />
-                            <span>اليوم 🌟</span>
-                          </span>
-                        )}
-                        <span className="day-sub-badge">
-                          {day.badge}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* خانات الحصص الثلاث لكل يوم */}
-                    {day.slots.map((slot) => {
-                      // لو كانت الحصة مادة دراسية
-                      if (slot.type === "subject") {
-                        const subjectObj = SUBJECTS.find((s) => s.id === slot.subjectId) || {
-                          id: slot.subjectId,
-                          name: slot.subjectId,
-                          iconName: "BookOpen",
-                          tagline: ""
-                        };
-
-                        const pendingCount = tasks.filter(
-                          (t) => t.subject === slot.subjectId && !t.completed
-                        ).length;
-
-                        return (
-                          <td key={slot.id} className="td-period-cell">
-                            <div
-                              onClick={() => {
-                                if (!isEditMode) {
-                                  onSelectSubject(slot.subjectId);
-                                }
-                              }}
-                              className={`subject-slot-card luxury-glass ${
-                                isEditMode ? "in-edit-mode" : "clickable"
-                              }`}
-                              title={
-                                isEditMode
-                                  ? "اضغط لتعديل هذه الحصة"
-                                  : `اضغط للدخول لمتراكم مادة ${subjectObj.name} وتعديله أو إنهائه`
-                              }
-                            >
-                              {/* شريط رأس الحصة */}
-                              <div className="slot-card-top-row">
-                                <div className="slot-subject-badge">
-                                  <div className="slot-icon-avatar">
-                                    <SubjectIcon name={subjectObj.iconName} size={18} />
-                                  </div>
-                                  <span className="slot-subject-title">
-                                    {subjectObj.name}
-                                  </span>
-                                </div>
-
-                                {/* بادج المتراكم اللحظي لهذه المادة */}
-                                {pendingCount > 0 ? (
-                                  <span className="slot-backlog-badge alert">
-                                    <Flame size={12} />
-                                    <span>{pendingCount} متراكم</span>
-                                  </span>
-                                ) : (
-                                  <span className="slot-backlog-badge clean">
-                                    <Check size={12} strokeWidth={3} />
-                                    <span>مفيش متراكم</span>
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* عنوان النشاط أو الملاحظة (كما في الكشكول) */}
-                              <div className="slot-activity-title">
-                                {slot.title || `مذاكرة ${subjectObj.name}`}
-                              </div>
-
-                              {slot.note && (
-                                <div className="slot-activity-note">
-                                  {slot.note}
-                                </div>
-                              )}
-
-                              {/* دعوة للإجراء (CTA) للانتقال إلى المتراكم المباشر */}
-                              <div className="slot-card-footer-cta">
-                                <span className="slot-click-hint">
-                                  {isEditMode ? "اضغط للتعديل" : "افتح المتراكم الآن"}
-                                </span>
-                                {isEditMode ? (
-                                  <Edit3 size={14} color="var(--theme-accent)" />
-                                ) : (
-                                  <ArrowLeft size={14} />
-                                )}
-                              </div>
-
-                              {/* زر تعديل سريع عند تفعيل وضع التعديل */}
-                              {isEditMode && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenEditSlot(day, slot);
-                                  }}
-                                  className="slot-quick-edit-btn"
-                                  title="تعديل تفاصيل الحصة"
-                                >
-                                  <Edit3 size={14} />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        );
-                      }
-
-                      // لو كانت الحصة فترة مقفولة (دروس / سنتر خارج البيت)
-                      if (slot.type === "locked") {
-                        return (
-                          <td key={slot.id} className="td-period-cell">
-                            <div
-                              onClick={() => {
-                                if (isEditMode) handleOpenEditSlot(day, slot);
-                              }}
-                              className={`locked-slot-card ${isEditMode ? "in-edit-mode" : ""}`}
-                            >
-                              <div className="locked-slot-header">
-                                <Lock size={16} color="#fbbf24" />
-                                <span className="locked-slot-badge">وقت محجوز بالسنتر</span>
-                              </div>
-                              <div className="locked-slot-title">
-                                {slot.title}
-                              </div>
-                              {slot.note && (
-                                <div className="locked-slot-note">
-                                  {slot.note}
-                                </div>
-                              )}
-
-                              {isEditMode && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenEditSlot(day, slot);
-                                  }}
-                                  className="slot-quick-edit-btn"
-                                  title="تعديل تفاصيل الحصة"
-                                >
-                                  <Edit3 size={14} />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        );
-                      }
-
-                      // لو كانت الحصة مخصصة لتصفية البواقي والمتراكم
-                      if (slot.type === "backlog") {
-                        return (
-                          <td key={slot.id} className="td-period-cell">
-                            <div
-                              onClick={() => {
-                                if (isEditMode) {
-                                  handleOpenEditSlot(day, slot);
-                                }
-                              }}
-                              className={`backlog-slot-card ${isEditMode ? "in-edit-mode" : ""}`}
-                            >
-                              <div className="backlog-slot-header">
-                                <Flame size={16} color="#f97316" />
-                                <span className="backlog-slot-badge">تصفية المتراكم ⚡</span>
-                              </div>
-                              <div className="backlog-slot-title">
-                                {slot.title}
-                              </div>
-                              <div className="backlog-slot-note">
-                                {totalPendingTasks > 0
-                                  ? `لديك ${totalPendingTasks} دروس متراكمة تنتظر التصفية!`
-                                  : "لا يوجد أي متراكم حالياً، استمر بالتميز!"}
-                              </div>
-
-                              {isEditMode && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenEditSlot(day, slot);
-                                  }}
-                                  className="slot-quick-edit-btn"
-                                  title="تعديل تفاصيل الحصة"
-                                >
-                                  <Edit3 size={14} />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        );
-                      }
-
-                      // الحصة وقت حر أو استراحة (free)
-                      return (
-                        <td key={slot.id} className="td-period-cell">
-                          <div
-                            onClick={() => {
-                              if (isEditMode) handleOpenEditSlot(day, slot);
-                            }}
-                            className={`free-slot-card ${isEditMode ? "in-edit-mode" : ""}`}
-                          >
-                            <div className="free-slot-header">
-                              <Coffee size={16} color="#34d399" />
-                              <span className="free-slot-badge">استراحة وشحن</span>
-                            </div>
-                            <div className="free-slot-title">
-                              {slot.title}
-                            </div>
-                            {slot.note && (
-                              <div className="free-slot-note">
-                                {slot.note}
-                              </div>
-                            )}
-
-                            {isEditMode && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenEditSlot(day, slot);
-                                }}
-                                className="slot-quick-edit-btn"
-                                title="تعديل تفاصيل الحصة"
-                              >
-                                <Edit3 size={14} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* نمط بطاقات الأيام الرأسي المخصص للشاشات والموبايل */
+        <div className="schedule-cards-vertical-wrapper">
+          {displayedDays.map((day) => {
+            const isToday = day.dayIndex === currentDayOfWeek;
+
+            return (
+              <div
+                key={day.id}
+                className={`day-stacked-card luxury-glass ${isToday ? "is-current-day-card" : ""}`}
+              >
+                {/* رأس كارت اليوم */}
+                <div className="day-stacked-header">
+                  <div className="day-stacked-title-group">
+                    <span className="day-stacked-name">{day.name}</span>
+                    {isToday && (
+                      <span className="today-glowing-indicator">
+                        <span className="today-pulse-dot" />
+                        <span>اليوم 🌟</span>
+                      </span>
+                    )}
+                    <span className="day-sub-badge">{day.badge}</span>
+                  </div>
+
+                  <span className="day-slots-counter">3 فترات وحصص</span>
+                </div>
+
+                {/* الحصص الثلاث مصفوفة عمودياً أو شبكياً متجاوباً */}
+                <div className="day-stacked-slots-grid">
+                  {day.slots.map((slot) => {
+                    const periodInfo =
+                      PERIOD_HEADERS.find((p) => p.id === slot.period) || PERIOD_HEADERS[0];
+                    const IconComponent =
+                      periodInfo.icon === "Sun" ? Sun : periodInfo.icon === "Moon" ? Moon : Clock;
+
+                    return (
+                      <div key={slot.id} className="day-stacked-slot-box">
+                        <div className="day-stacked-period-label">
+                          <IconComponent size={14} color="var(--theme-accent)" />
+                          <span className="period-label-text">{periodInfo.title}</span>
+                        </div>
+                        {renderSlotCard(day, slot)}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* 3. نافذة تعديل بيانات الحصة الفاخرة (Modal) */}
       {editingSlot && (
